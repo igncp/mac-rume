@@ -7,6 +7,7 @@
 
 import AppKit
 
+// https://developer.apple.com/documentation/appkit/nspanel
 final class SquirrelPanel: NSPanel {
   private let view: SquirrelView
   private let back: NSVisualEffectView

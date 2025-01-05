@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+# For rume, from the original GH actions
+brew install llvm ninja
+
+# For mac-rume
+brew install swiftlint cmake boost
+
+git submodule update --init --recursive
+
+bash scripts/build_librime.sh
+
+bash ./scripts/install_package.sh

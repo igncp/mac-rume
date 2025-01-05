@@ -3,8 +3,9 @@
 all: release
 install: install-release
 
-RIME_BIN_DIR = librime/dist/bin
-RIME_LIB_DIR = librime/dist/lib
+# Changed from `dist` to `build` to use the built one
+RIME_BIN_DIR = librime/build/bin
+RIME_LIB_DIR = librime/build/lib
 DERIVED_DATA_PATH = build
 
 RIME_LIBRARY_FILE_NAME = librime.1.dylib
@@ -165,10 +166,17 @@ install-debug: debug permission-check
 	cp -R $(DERIVED_DATA_PATH)/Build/Products/Debug/Squirrel.app "$(DSTROOT)"
 	DSTROOT="$(DSTROOT)" RIME_NO_PREBUILD=1 bash scripts/postinstall
 
-install-release: release permission-check
+install-prebuild:
 	rm -rf "$(SQUIRREL_APP_ROOT)"
 	cp -R $(DERIVED_DATA_PATH)/Build/Products/Release/Squirrel.app "$(DSTROOT)"
 	DSTROOT="$(DSTROOT)" bash scripts/postinstall
+
+install-release: release permission-check install-prebuild
+
+install-package: package install-prebuild
+
+bootstrap:
+	bash scripts/local_setup.sh
 
 .PHONY: clean clean-deps
 

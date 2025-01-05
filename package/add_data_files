@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 project_file=Squirrel.xcodeproj/project.pbxproj
 test -f "${project_file}"
@@ -113,11 +113,11 @@ add_lib() {
 
 
 data_files=(
-    $(ls data/plum/* | xargs basename)
+    $(ls data/plum/* | xargs -I{} basename {})
 )
 
 lib_files=(
-    $(ls lib/rime-plugins/* | xargs basename)
+    $(ls lib/rime-plugins/* | xargs -I{} basename {})
 )
 
 for file in "${data_files[@]}"

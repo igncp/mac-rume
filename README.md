@@ -8,8 +8,13 @@
 今由　[中州韻輸入法引擎／Rime Input Method Engine](https://rime.im)
 及其他開源技術強力驅動
 
-【鼠鬚管】輸入法
+Rume - Rust + Rime
 ===
+A fork of the Rime IME and Squirrel (macOS app) to practice Rust (and C++)
+programming and learn the details about an IME implementation. The intention is
+to add some QoL improvements and keep in sync with the upstream. All credits go
+to the original authors.
+
 [![Download](https://img.shields.io/github/v/release/rime/squirrel)](https://github.com/rime/squirrel/releases/latest)
 [![Build Status](https://github.com/rime/squirrel/actions/workflows/commit-ci.yml/badge.svg)](https://github.com/rime/squirrel/actions/workflows)
 [![GitHub Tag](https://img.shields.io/github/tag/rime/squirrel.svg)](https://github.com/rime/squirrel)

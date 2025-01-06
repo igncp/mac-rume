@@ -15,3 +15,6 @@ make deps || true
 ./action-install-plugins-macos.sh || true
 make test
 make install
+
+cd ..
+make copy-rime-binaries

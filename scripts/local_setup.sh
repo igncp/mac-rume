@@ -3,7 +3,7 @@
 set -e
 
 # For rume, from the original GH actions
-brew install llvm ninja
+brew install llvm ninja clang-format
 
 # For mac-rume
 brew install swiftlint cmake boost

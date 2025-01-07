@@ -47,6 +47,9 @@ librime: $(RIME_DEPS)
 	$(MAKE) -C librime release install
 	$(MAKE) copy-rime-binaries
 
+librime-build:
+	bash scripts/build_librime.sh
+
 copy-rime-binaries:
 	cp -L $(RIME_LIB_DIR)/$(RIME_LIBRARY_FILE_NAME) lib/
 	cp -pR $(RIME_LIB_DIR)/rime-plugins lib/
@@ -166,14 +169,14 @@ install-debug: debug permission-check
 	cp -R $(DERIVED_DATA_PATH)/Build/Products/Debug/Squirrel.app "$(DSTROOT)"
 	DSTROOT="$(DSTROOT)" RIME_NO_PREBUILD=1 bash scripts/postinstall
 
-install-prebuild:
+install-mac-build:
 	rm -rf "$(SQUIRREL_APP_ROOT)"
 	cp -R $(DERIVED_DATA_PATH)/Build/Products/Release/Squirrel.app "$(DSTROOT)"
 	DSTROOT="$(DSTROOT)" bash scripts/postinstall
 
-install-release: release permission-check install-prebuild
+install-release: release permission-check install-mac-build
 
-install-package: package install-prebuild
+install-package: librime-build copy-rime-binaries package install-mac-build
 
 bootstrap:
 	bash scripts/local_setup.sh

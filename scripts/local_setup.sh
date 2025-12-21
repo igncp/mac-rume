@@ -2,24 +2,19 @@
 
 set -e
 
-if ! type cmake &>/dev/null; then
-    echo "Error: cmake is not installed. Please install cmake and try again."
-    echo "Download v3.31.10 from: cmake-3.31.10-macos-universal.dmg - https://cmake.org/download/"
+if ! type brew &>/dev/null; then
     echo "sudo rm -rf /Library/Developer/CommandLineTools && xcode-select --install"
-    echo "brew install ninja libiconv cmake llvm cbindgen"
-    echo 'PATH="$HOME/.rustup/toolchains/stable-aarch64-apple-darwin/bin:/bin:/usr/bin:$HOME/homebrew/bin:/Applications/CMake.app/Contents/bin" /bin/bash --norc'
+    echo "brew install libiconv llvm"
+    echo 'PATH="/bin:/usr/bin:$HOME/homebrew/bin" /bin/bash --norc'
     exit 1
 fi
 
-if [ -n "$MACOSX_DEPLOYMENT_TARGET" ]; then
-    echo "Warning: MACOSX_DEPLOYMENT_TARGET is set to '$MACOSX_DEPLOYMENT_TARGET'. Stopping."
-    exit 1
-fi
+. scripts/local_use_system_clang.sh
 
 git submodule update --init --recursive
 
-# This should not be using any Nix paths
-xcode-select --print-path
+# Should be 3.X
+cmake --version
 
 bash scripts/build_librime.sh
 

@@ -11,10 +11,7 @@ export CMAKE_GENERATOR=Ninja
 
 cd librime
 
-sed -i '' 's|{BOOST_ROOT=|{BOOST_ROOT:-|' ./install-boost.sh
-
-sed -i '' '/tar -xJf.*$/a\
-sleep 2; echo $BOOST_ROOT' ./install-boost.sh
+sed -i 's|{BOOST_ROOT=|{BOOST_ROOT:-|' ./install-boost.sh
 bash ./install-boost.sh
 make deps
 

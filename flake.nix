@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = {
@@ -15,7 +15,14 @@
         if enable-flake
         then {
           devShells.default = nixpkgs.legacyPackages."${system}".mkShellNoCC {
-            nativeBuildInputs = with pkgs; [cmake pkg-config clang ninja llvm];
+            # nativeBuildInputs = with pkgs; [
+            #   cmake
+            #   pkg-config
+            #   clang
+            #   ninja
+            #   llvm
+            #   python3 # For building `opencc`
+            # ];
             packages = with pkgs; [swiftlint rust-cbindgen doxygen nodejs];
             # @TODO:
             # 1. Support .ccls in the `librime` directory

@@ -60,7 +60,7 @@ frameworks_phase_entry() {
 }
 
 add_line() {
-    local search="^[[:space:]]*$(sed 's/\//\\\//g; s/\*/\\*/g' <<< "${1}")\$"
+    local search="^[[:space:]]*$(sed 's/\//\\\//g; s/\*/\\*/g' <<<"${1}")\$"
     sed -i '' "/${search}/a\\
 ${2}
 " "${project_file}"
@@ -68,32 +68,32 @@ ${2}
 
 add_file() {
     local file="$1"
-    local new_id=$(( ++lastid ))
-    local new_refid=$(( ++lastid ))
+    local new_id=$((++lastid))
+    local new_refid=$((++lastid))
     local anchor_line
     local new_line
 
     anchor_line="$(obj_entry ${anchor[@]})"
     new_line="$(obj_entry ${new_id} ${new_refid} "${file}")"
-    add_line "${anchor_line}" "${new_line}"
+    add_line "${anchor_line}" "${new_line}" || true
 
     anchor_line="$(copy_files_entry ${anchor[@]})"
     new_line="$(copy_files_entry ${new_id} ${new_refid} "${file}")"
-    add_line "${anchor_line}" "${new_line}"
+    add_line "${anchor_line}" "${new_line}" || true
 
     anchor_line="$(file_ref_entry ${anchor[@]})"
     new_line="$(file_ref_entry ${new_id} ${new_refid} "${file}")"
-    add_line "${anchor_line}" "${new_line}"
+    add_line "${anchor_line}" "${new_line}" || true
 
     anchor_line="$(group_entry ${anchor[@]})"
     new_line="$(group_entry ${new_id} ${new_refid} "${file}")"
-    add_line "${anchor_line}" "${new_line}"
+    add_line "${anchor_line}" "${new_line}" || true
 }
 
 add_lib() {
     local lib="$1"
-    local new_lib_id=$(( ++lastid ))
-    local new_lib_refid=$(( ++lastid ))
+    local new_lib_id=$((++lastid))
+    local new_lib_refid=$((++lastid))
     local anchor_line
     local new_line
 
@@ -111,7 +111,6 @@ add_lib() {
     add_line "${anchor_lib_line}" "${new_lib_line}"
 }
 
-
 data_files=(
     $(ls data/plum/* | xargs -I{} basename {})
 )
@@ -120,21 +119,17 @@ lib_files=(
     $(ls lib/rime-plugins/* | xargs -I{} basename {})
 )
 
-for file in "${data_files[@]}"
-do
-    if grep -Fq " ${file} " "${project_file}"
-    then
-	echo "found ${file}"
-	continue
+for file in "${data_files[@]}"; do
+    if grep -Fq " ${file} " "${project_file}"; then
+        echo "found ${file}"
+        continue
     fi
     echo "adding ${file} to ${project_file}"
     add_file "${file}"
 done
 
-for lib in "${lib_files[@]}"
-do
-    if grep -Fq " ${lib} " "${project_file}"
-    then
+for lib in "${lib_files[@]}"; do
+    if grep -Fq " ${lib} " "${project_file}"; then
         echo "found ${lib}"
         continue
     fi

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 DERIVED_DATA_PATH=$1
 BUNDLE_IDENTIFIER='im.rime.inputmethod.Squirrel'
 INSTALL_LOCATION='/Library/Input Methods'

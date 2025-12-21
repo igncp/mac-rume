@@ -457,23 +457,48 @@ private extension SquirrelInputController {
 
       if inlineCandidate {
         var candidatePreview = ctx.commit_text_preview.map { String(cString: $0) } ?? ""
+        let endOfCandidatePreview = candidatePreview.endIndex
         if inlinePreedit {
+          // 左移光標後的情形：
+          // preedit:             ^已選某些字[xiang zuo yi dong]|guangbiao$
+          // commit_text_preview: ^已選某些字向左移動$
+          // candidate_preview:   ^已選某些字[向左移動]|guangbiao$
+          // 繼續翻頁至指定更短字詞的情形：
+          // preedit:             ^已選某些字[xiang zuo]yidong|guangbiao$
+          // commit_text_preview: ^已選某些字向左yidong$
+          // candidate_preview:   ^已選某些字[向左]yidong|guangbiao$
+          // 光標移至當前段落最左端的情形：
+          // preedit:             ^已選某些字|[xiang zuo yi dong guang biao]$
+          // commit_text_preview: ^已選某些字向左移動光標$
+          // candidate_preview:   ^已選某些字|[向左移動光標]$
+          // 討論：
+          // preedit 與 commit_text_preview 中“已選某些字”部分一致
+          // 因此，選中範圍即正在翻譯的碼段“向左移動”中，兩者的 start 值一致
+          // 光標位置的範圍是 start ..= endOfCandidatePreview
           if caretPos >= end && caretPos < preedit.endIndex {
+            // 從 preedit 截取光標後未翻譯的編碼“guangbiao”
             candidatePreview += preedit[caretPos...]
           }
-          show(preedit: candidatePreview,
-               selRange: NSRange(location: start.utf16Offset(in: candidatePreview), length: candidatePreview.utf16.distance(from: start, to: candidatePreview.endIndex)),
-               caretPos: candidatePreview.utf16.count - max(0, preedit.utf16.distance(from: caretPos, to: preedit.endIndex)))
         } else {
-          if end < caretPos && start < caretPos {
-            candidatePreview = String(candidatePreview[..<candidatePreview.index(candidatePreview.endIndex, offsetBy: -max(0, preedit.distance(from: end, to: caretPos)))])
-          } else if end < preedit.endIndex && caretPos <= start {
-            candidatePreview = String(candidatePreview[..<candidatePreview.index(candidatePreview.endIndex, offsetBy: -max(0, preedit.distance(from: end, to: preedit.endIndex)))])
-          }
-          show(preedit: candidatePreview,
-               selRange: NSRange(location: start.utf16Offset(in: candidatePreview), length: candidatePreview.utf16.distance(from: start, to: candidatePreview.endIndex)),
-               caretPos: candidatePreview.utf16.count)
+          // 翻頁至指定更短字詞的情形：
+          // preedit:             ^已選某些字[xiang zuo]yidong|guangbiao$
+          // commit_text_preview: ^已選某些字向左yidongguangbiao$
+          // candidate_preview:   ^已選某些字[向左???]|$
+          // 光標移至當前段落最左端，繼續翻頁至指定更短字詞的情形：
+          // preedit:             ^已選某些字|[xiang zuo]yidongguangbiao$
+          // commit_text_preview: ^已選某些字向左yidongguangbiao$
+          // candidate_preview:   ^已選某些字|[向左]???$
+          // FIXME: add librime APIs to support preview candidate without remaining code.
         }
+        // preedit can contain additional prompt text before start:
+        // ^(prompt)[selection]$
+        let start = min(start, candidatePreview.endIndex)
+        // caret can be either before or after the selected range.
+        let caretPos = caretPos <= start ? caretPos : endOfCandidatePreview
+        show(preedit: candidatePreview,
+             selRange: NSRange(location: start.utf16Offset(in: candidatePreview),
+                               length: candidatePreview.utf16.distance(from: start, to: candidatePreview.endIndex)),
+             caretPos: caretPos.utf16Offset(in: candidatePreview))
       } else {
         if inlinePreedit {
           show(preedit: preedit, selRange: NSRange(location: start.utf16Offset(in: preedit), length: preedit.utf16.distance(from: start, to: end)), caretPos: caretPos.utf16Offset(in: preedit))
@@ -490,22 +515,24 @@ private extension SquirrelInputController {
       let numCandidates = Int(ctx.menu.num_candidates)
       var candidates = [String]()
       var comments = [String]()
-      for i in 0..<numCandidates {
-        let candidate = ctx.menu.candidates[i]
-        candidates.append(candidate.text.map { String(cString: $0) } ?? "")
-        comments.append(candidate.comment.map { String(cString: $0) } ?? "")
-      }
       var labels = [String]()
-      // swiftlint:disable identifier_name
-      if let select_keys = ctx.menu.select_keys {
-        labels = String(cString: select_keys).map { String($0) }
-      } else if let select_labels = ctx.select_labels {
-        let pageSize = Int(ctx.menu.page_size)
-        for i in 0..<pageSize {
-          labels.append(select_labels[i].map { String(cString: $0) } ?? "")
+      if !rimeAPI.get_option(session, "_hide_candidate") {
+        for i in 0..<numCandidates {
+          let candidate = ctx.menu.candidates[i]
+          candidates.append(candidate.text.map { String(cString: $0) } ?? "")
+          comments.append(candidate.comment.map { String(cString: $0) } ?? "")
         }
+        // swiftlint:disable identifier_name
+        if let select_keys = ctx.menu.select_keys {
+          labels = String(cString: select_keys).map { String($0) }
+        } else if let select_labels = ctx.select_labels {
+          let pageSize = Int(ctx.menu.page_size)
+          for i in 0..<pageSize {
+            labels.append(select_labels[i].map { String(cString: $0) } ?? "")
+          }
+        }
+        // swiftlint:enable identifier_name
       }
-      // swiftlint:enable identifier_name
       let page = Int(ctx.menu.page_no)
       let lastPage = ctx.menu.is_last_page
 

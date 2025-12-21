@@ -2,8 +2,8 @@
 
 set -e
 
-rime_version=latest
-rime_git_hash=$(curl -s https://api.github.com/repos/rime/librime/git/refs/tags/${rime_version} | jq -r '.object.sha[0:7]')
+rime_version=1.13.1
+rime_git_hash="1c23358"
 sparkle_version=2.6.2
 
 # TODO: Use the ones from the submodule, similar to the dynamic libraries

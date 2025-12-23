@@ -1,5 +1,5 @@
 [submodule "librime"]
-	path = librime
+	path = rume
 	url = https://github.com/igncp/rume.git
 	ignore = dirty
 [submodule "plum"]

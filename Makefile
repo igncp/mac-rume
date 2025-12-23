@@ -4,17 +4,20 @@ all: release
 install: install-release
 
 # Changed from `dist` to `build` to use the built one
-RIME_BIN_DIR = librime/build/bin
-RIME_LIB_DIR = librime/build/lib
+RIME_BIN_DIR = rume/build/bin
+RIME_LIB_DIR = rume/build/lib
+RUME_API_DIR = rume/target/release
 DERIVED_DATA_PATH = build
 
 RIME_LIBRARY_FILE_NAME = librime.1.dylib
 RIME_LIBRARY = lib/$(RIME_LIBRARY_FILE_NAME)
+RUME_LIBRARY_FILE_NAME = librume.dylib
+RUME_LIBRARY = lib/$(RUME_LIBRARY_FILE_NAME)
 
-RIME_DEPS = librime/lib/libmarisa.a \
-	librime/lib/libleveldb.a \
-	librime/lib/libopencc.a \
-	librime/lib/libyaml-cpp.a
+RIME_DEPS = rume/lib/libmarisa.a \
+	rume/lib/libleveldb.a \
+	rume/lib/libopencc.a \
+	rume/lib/libyaml-cpp.a
 PLUM_DATA = bin/rime-install \
 	data/plum/default.yaml \
 	data/plum/symbols.yaml \
@@ -25,9 +28,9 @@ OPENCC_DATA = data/opencc/TSCharacters.ocd2 \
 SPARKLE_FRAMEWORK = Frameworks/Sparkle.framework
 SPARKLE_SIGN = package/sign_update
 PACKAGE = package/Squirrel.pkg
-DEPS_CHECK = $(RIME_LIBRARY) $(PLUM_DATA) $(OPENCC_DATA) $(SPARKLE_FRAMEWORK)
+DEPS_CHECK = $(RIME_LIBRARY) $(PLUM_DATA) $(OPENCC_DATA) $(SPARKLE_FRAMEWORK) $(RUME_LIBRARY)
 
-OPENCC_DATA_OUTPUT = librime/share/opencc/*.*
+OPENCC_DATA_OUTPUT = rume/share/opencc/*.*
 PLUM_DATA_OUTPUT = plum/output/*.*
 PLUM_OPENCC_OUTPUT = plum/output/opencc/*.*
 RIME_PACKAGE_INSTALLER = plum/rime-install
@@ -35,16 +38,16 @@ RIME_PACKAGE_INSTALLER = plum/rime-install
 INSTALL_NAME_TOOL = $(shell xcrun -find install_name_tool)
 INSTALL_NAME_TOOL_ARGS = -add_rpath @loader_path/../Frameworks
 
-.PHONY: librime copy-rime-binaries
+.PHONY: rume copy-rime-binaries
 
 $(RIME_LIBRARY):
-	$(MAKE) librime
+	$(MAKE) rume
 
 $(RIME_DEPS):
-	$(MAKE) -C librime deps
+	$(MAKE) -C rume deps
 
-librime: $(RIME_DEPS)
-	$(MAKE) -C librime release install
+rume: $(RIME_DEPS)
+	$(MAKE) -C rume release install
 	$(MAKE) copy-rime-binaries
 
 librime-build:
@@ -55,6 +58,7 @@ copy-rime-binaries:
 	cp -pR $(RIME_LIB_DIR)/rime-plugins lib/
 	cp $(RIME_BIN_DIR)/rime_deployer bin/
 	cp $(RIME_BIN_DIR)/rime_dict_manager bin/
+	cp $(RUME_API_DIR)/$(RUME_LIBRARY_FILE_NAME) lib/
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_deployer
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_dict_manager
 
@@ -76,7 +80,7 @@ endif
 	$(MAKE) copy-plum-data
 
 opencc-data:
-	$(MAKE) -C librime deps/opencc
+	$(MAKE) -C rume deps/opencc
 	$(MAKE) copy-opencc-data
 
 copy-plum-data:
@@ -89,7 +93,7 @@ copy-opencc-data:
 	cp $(OPENCC_DATA_OUTPUT) data/opencc/
 	cp $(PLUM_OPENCC_OUTPUT) data/opencc/ > /dev/null 2>&1 || true
 
-deps: librime data
+deps: rume data
 
 ifdef ARCHS
 BUILD_SETTINGS += ARCHS="$(ARCHS)"
@@ -199,6 +203,6 @@ clean-package:
 
 clean-deps:
 	$(MAKE) -C plum clean
-	$(MAKE) -C librime clean
-	rm -rf librime/dist > /dev/null 2>&1 || true
+	$(MAKE) -C rume clean
+	rm -rf rume/dist > /dev/null 2>&1 || true
 	$(MAKE) clean-sparkle

@@ -14,16 +14,16 @@ sparkle_archive="Sparkle-${sparkle_version}.tar.xz"
 sparkle_download_url="https://github.com/sparkle-project/Sparkle/releases/download/${sparkle_version}/${sparkle_archive}"
 
 mkdir -p download && (
-  cd download
-  [ -z "${no_download}" ] && curl -LO "${rime_deps_download_url}"
-  tar --bzip2 -xf "${rime_deps_archive}"
-  [ -z "${no_download}" ] && curl -LO "${sparkle_download_url}"
-  tar -xJf "${sparkle_archive}"
+    cd download
+    [ -z "${no_download}" ] && curl -LO "${rime_deps_download_url}"
+    tar --bzip2 -xf "${rime_deps_archive}"
+    [ -z "${no_download}" ] && curl -LO "${sparkle_download_url}"
+    tar -xJf "${sparkle_archive}"
 )
 
-mkdir -p librime/share
+mkdir -p rume/share
 mkdir -p Frameworks
-cp -R download/share/opencc librime/share/
+cp -R download/share/opencc rume/share/
 cp -R download/Sparkle.framework Frameworks/
 
 # skip building librime and opencc-data; use downloaded artifacts

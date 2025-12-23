@@ -6,6 +6,7 @@
 //
 
 import Foundation
+// https://developer.apple.com/documentation/inputmethodkit
 import InputMethodKit
 
 @main

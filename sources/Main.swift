@@ -24,6 +24,14 @@ struct SquirrelApp {
   // swiftlint:disable:next cyclomatic_complexity
   static func main() {
     let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
+    // Keep the pointer returned from C; do not copy the struct with .pointee
+    let rumePtr: UnsafeMutablePointer<Rume> = rume_new()
+
+    if let initFp = rumePtr.pointee.init {
+      _ = initFp(rumePtr)
+    }
+
+    rume_free(rumePtr)
 
     let handled = autoreleasepool {
       let installer = SquirrelInstaller()

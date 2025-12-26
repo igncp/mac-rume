@@ -25,17 +25,6 @@ struct SquirrelApp {
   static func main() {
     let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
 
-    let rumePtr: UnsafeMutablePointer<RumeC> = "MacRume".withCString { appNameCStr in
-      SquirrelApp.logDir.path.withCString { logDirCStr in
-        var cfg = NewRumeConfigC(app_name: appNameCStr, log_dir: logDirCStr, stdout_log: false)
-        return withUnsafePointer(to: &cfg) { ptr in
-          rume_new(ptr)
-        }
-      }
-    }
-    rume_init(rumePtr)
-    rume_free(rumePtr)
-
     let handled = autoreleasepool {
       let installer = SquirrelInstaller()
       let args = CommandLine.arguments

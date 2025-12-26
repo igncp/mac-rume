@@ -13,6 +13,8 @@ final class SquirrelInputController: IMKInputController {
 
   private weak var client: IMKTextInput?
   private let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
+  private var rumeAPI: UnsafeMutablePointer<RumeC>!
+
   private var preedit: String = ""
   private var selRange: NSRange = .empty
   private var caretPos: Int = 0
@@ -96,6 +98,8 @@ final class SquirrelInputController: IMKInputController {
       if modifiers.contains(.command) {
         break
       }
+
+      rume_handle_key_down(rumeAPI, event.keyCode);
 
       let keyCode = event.keyCode
       var keyChars = event.charactersIgnoringModifiers
@@ -188,6 +192,17 @@ final class SquirrelInputController: IMKInputController {
     self.client = client as? IMKTextInput
     // print("[DEBUG] initWithServer: \(server ?? .init()) delegate: \(delegate ?? "nil") client:\(client ?? "nil")")
     super.init(server: server, delegate: delegate, client: client)
+
+    rumeAPI = "MacRume".withCString { appNameCStr in
+      SquirrelApp.logDir.path.withCString { logDirCStr in
+        var cfg = RumeNewConfigC(app_name: appNameCStr, log_dir: logDirCStr, stdout_log: false)
+        return withUnsafePointer(to: &cfg) { ptr in
+          rume_new(ptr)
+        }
+      }
+    }
+    rume_init(rumeAPI)
+
     createSession()
   }
 
@@ -277,6 +292,8 @@ final class SquirrelInputController: IMKInputController {
 
   deinit {
     destroySession()
+    rume_free(rumeAPI)
+    rumeAPI = nil
   }
 }
 

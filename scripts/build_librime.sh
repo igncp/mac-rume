@@ -12,7 +12,7 @@ export CMAKE_GENERATOR=Ninja
 cd rume
 
 sed -i 's|{BOOST_ROOT=|{BOOST_ROOT:-|' ./install-boost.sh
-bash ./install-boost.sh
+bash ./scripts/install-boost.sh
 make deps
 
 ./action-install-plugins-macos.sh || true

@@ -61,7 +61,7 @@ Choose one of the following options.
 ``` sh
 export BUILD_UNIVERSAL=1
 
-bash librime/install-boost.sh
+bash librime/scripts/install-boost.sh
 
 export BOOST_ROOT="$(pwd)/librime/deps/boost-1.84.0"
 ```

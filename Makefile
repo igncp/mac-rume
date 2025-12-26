@@ -61,6 +61,7 @@ copy-rime-binaries:
 	cp $(RUME_API_DIR)/$(RUME_LIBRARY_FILE_NAME) lib/
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_deployer
 	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_dict_manager
+	$(INSTALL_NAME_TOOL) -id @rpath/$(RUME_LIBRARY_FILE_NAME) lib/$(RUME_LIBRARY_FILE_NAME)
 
 .PHONY: data plum-data opencc-data copy-plum-data copy-opencc-data
 

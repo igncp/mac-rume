@@ -2,4 +2,4 @@
 
 set -xeuo pipefail
 
-sudo find /var/folders/ 2>&1 | ag squirrel | ag INFO
+sudo find /var/folders/ 2>&1 | ag squirrel | ag -r "(rume.log|INFO)"

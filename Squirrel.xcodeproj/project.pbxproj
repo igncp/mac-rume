@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0D2DACFF2EFAD36B00CBB125 /* librume.dylib in Copy 3rd-party Frameworks */ = {isa = PBXBuildFile; fileRef = 0D2DACFE2EFAD36B00CBB125 /* librume.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		0D33D3112EFD9830003E01A5 /* librume.dylib in Copy 3rd-party Frameworks */ = {isa = PBXBuildFile; fileRef = 0D2DACFE2EFAD36B00CBB125 /* librume.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C6B9F9D2BCD086700E327DF /* librime-lua.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9A2BCD086700E327DF /* librime-lua.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C6B9F9E2BCD086700E327DF /* librime-octagram.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9B2BCD086700E327DF /* librime-octagram.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C6B9F9F2BCD086700E327DF /* librime-predict.dylib in Copy Rime plugins */ = {isa = PBXBuildFile; fileRef = 2C6B9F9C2BCD086700E327DF /* librime-predict.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -196,7 +196,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				0D2DACFF2EFAD36B00CBB125 /* librume.dylib in Copy 3rd-party Frameworks */,
+				0D33D3112EFD9830003E01A5 /* librume.dylib in Copy 3rd-party Frameworks */,
 				44CD640C15E2646B0021234E /* librime.1.dylib in Copy 3rd-party Frameworks */,
 				447765CA25C30E97002415AF /* Sparkle.framework in Copy 3rd-party Frameworks */,
 			);
@@ -635,7 +635,10 @@
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_1)",
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_2)",
 				);
-				OTHER_LDFLAGS = "-lrime.1";
+				OTHER_LDFLAGS = (
+					"-lrime.1",
+					"-lrume",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = im.rime.inputmethod.Squirrel;
 				PRODUCT_NAME = Squirrel;
 				SDKROOT = macosx;
@@ -689,7 +692,10 @@
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_1)",
 					"$(OTHER_CPLUSPLUSFLAGS_QUOTED_FOR_TARGET_2)",
 				);
-				OTHER_LDFLAGS = "-lrime.1";
+				OTHER_LDFLAGS = (
+					"-lrime.1",
+					"-lrume",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = im.rime.inputmethod.Squirrel;
 				PRODUCT_NAME = Squirrel;
 				SDKROOT = macosx;

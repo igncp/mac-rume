@@ -11,7 +11,8 @@ fi
 
 . scripts/local_use_system_clang.sh
 
-git submodule update --init --recursive
+# The `-c ...` part is needed for the file transport when testing locally
+git -c protocol.file.allow=always submodule update --init --recursive
 
 # Should be 3.X
 cmake --version

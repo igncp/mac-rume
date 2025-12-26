@@ -23,6 +23,7 @@
             rustc
             clippy
             rust-analyzer
+            astyle
             cargo
             python3 # For building `opencc`
           ];
@@ -30,7 +31,7 @@
           # @TODO:
           # 1. Support .ccls in the `librime` directory
           shellHook = ''
-            export PATH=$(echo "$PATH" |
+            export PATH=$(echo "$PATH:/Library/Input Methods/Squirrel.app/Contents/MacOS" |
               sed -e 's|/[^:]*libiconv[^:]*:||g' |
               sed -e 's|/[^:]*xcbuild[^:]*:||g')
             echo "Hello from ${system}!"

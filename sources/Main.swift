@@ -25,9 +25,13 @@ struct SquirrelApp {
   static func main() {
     let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
 
-    print("Squirrel starting...")
-    let rumePtr: UnsafeMutablePointer<RumeC> = SquirrelApp.logDir.path.withCString { cstr in
-      rume_new(cstr)
+    let rumePtr: UnsafeMutablePointer<RumeC> = "MacRume".withCString { appNameCStr in
+      SquirrelApp.logDir.path.withCString { logDirCStr in
+        var cfg = NewRumeConfigC(app_name: appNameCStr, log_dir: logDirCStr, stdout_log: false)
+        return withUnsafePointer(to: &cfg) { ptr in
+          rume_new(ptr)
+        }
+      }
     }
     rume_init(rumePtr)
     rume_free(rumePtr)

@@ -15,7 +15,7 @@ sed -i 's|{BOOST_ROOT=|{BOOST_ROOT:-|' ./install-boost.sh
 bash ./scripts/install-boost.sh
 make deps
 
-./action-install-plugins-macos.sh || true
+./scripts/action-install-plugins-macos.sh || true
 make test
 make install
 

@@ -99,7 +99,8 @@ final class SquirrelInputController: IMKInputController {
         break
       }
 
-      rume_handle_key_down(rumeAPI, event.keyCode);
+      let rimeModifiers = SquirrelKeycode.osxModifiersToRime(modifiers: modifiers)
+      rume_handle_key_down(rumeAPI, event.keyCode, rimeModifiers);
 
       let keyCode = event.keyCode
       var keyChars = event.charactersIgnoringModifiers
@@ -116,7 +117,6 @@ final class SquirrelInputController: IMKInputController {
                                                            shift: modifiers.contains(.shift),
                                                            caps: modifiers.contains(.capsLock))
         if rimeKeycode != 0 {
-          let rimeModifiers = SquirrelKeycode.osxModifiersToRime(modifiers: modifiers)
           handled = processKey(rimeKeycode, modifiers: rimeModifiers)
           rimeUpdate()
         }

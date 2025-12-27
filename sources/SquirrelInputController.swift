@@ -272,7 +272,6 @@ final class SquirrelInputController: IMKInputController {
   // to clean up if that is necessary.
   override func commitComposition(_ sender: Any!) {
     self.client ?= sender as? IMKTextInput
-    // print("[DEBUG] commitComposition: \(sender ?? "nil")")
     //  commit raw input
     if rimeSession != 0 {
       if let input = rimeAPI.get_input(rimeSession) {
@@ -545,10 +544,10 @@ extension SquirrelInputController {
     if rimeAPI.get_status(rimeSession, &status) {
       // enable schema specific ui style
       // swiftlint:disable:next identifier_name
-      if let schema_id = status.schema_id,
-        schemaId == "" || schemaId != String(cString: schema_id)
+      if let rime_schema_id = status.schema_id,
+        schemaId == "" || schemaId != String(cString: rime_schema_id)
       {
-        schemaId = String(cString: schema_id)
+        schemaId = String(cString: rime_schema_id)
         NSApp.squirrelAppDelegate.loadSettings(for: schemaId)
         // inline preedit
         if let panel = NSApp.squirrelAppDelegate.panel {
@@ -717,9 +716,52 @@ extension SquirrelInputController {
     }
   }
 
-  // Rume update path (minimal stub for now). Mirrors rimeUpdate() when Rume adds status/context/commit APIs.
   fileprivate func rumeUpdate() {
-    // TODO: implement Rume status/context/commit updates and drive show()/showPanel()
+    // > Update status depending on the config (for future)
+
+    if let contextPtr = rume_get_context(rumeInstance, rumeSession) {
+      let numCandidates = Int(contextPtr.pointee.menu.num_candidates)
+      if let committedText = contextPtr.pointee.committed_text {
+        let text = String(cString: committedText)
+        if !text.isEmpty {
+          commit(string: text)
+        }
+      }
+      let preedit =
+        contextPtr.pointee.preedit_text.map { String(cString: $0) } ?? ""
+
+      // Update inline preedit so the client shows composition only
+      // and does not echo raw keystrokes into the document.
+      // Entire preedit is treated as raw/selected text.
+      show(
+        preedit: preedit,
+        selRange: NSRange(location: 0, length: preedit.utf16.count),
+        caretPos: preedit.utf16.count
+      )
+
+      if numCandidates > 0 {
+        let candidates = Array(repeating: "", count: numCandidates)
+        let comments = Array(repeating: "", count: numCandidates)
+        let labels: [String] = []
+
+        showPanel(
+          preedit: preedit,
+          selRange: NSRange(location: 0, length: 0),
+          caretPos: 0,
+          candidates: candidates,
+          comments: comments,
+          labels: labels,
+          highlighted: 0,
+          page: 0,
+          lastPage: true
+        )
+      } else {
+        hidePalettes()
+      }
+      rume_free_context(contextPtr)
+    } else {
+      hidePalettes()
+    }
   }
 
   fileprivate func commit(string: String) {
@@ -731,7 +773,7 @@ extension SquirrelInputController {
 
   fileprivate func show(preedit: String, selRange: NSRange, caretPos: Int) {
     guard let client = client else { return }
-    // print("[DEBUG] showPreeditString: '\(preedit)'")
+
     if self.preedit == preedit && self.caretPos == caretPos
       && self.selRange == selRange
     {
@@ -742,7 +784,6 @@ extension SquirrelInputController {
     self.caretPos = caretPos
     self.selRange = selRange
 
-    // print("[DEBUG] selRange.location = \(selRange.location), selRange.length = \(selRange.length); caretPos = \(caretPos)")
     let start = selRange.location
     let attrString = NSMutableAttributedString(string: preedit)
     if start > 0 {

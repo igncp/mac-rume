@@ -19,6 +19,7 @@
             rustc
             clippy
             rust-analyzer
+            rustfmt
             astyle # For formatting new C/C++ code
             cargo
             python3 # For building `opencc`
@@ -33,7 +34,19 @@
             export PATH=$(echo "$PATH:/Library/Input Methods/Squirrel.app/Contents/MacOS" |
               sed -e 's|/[^:]*libiconv[^:]*:||g' |
               sed -e 's|/[^:]*xcbuild[^:]*:||g')
-            echo "Hello from ${system}!"
+
+            # This is important to use the system SDK and not any Nix SDK
+            unset MACOSX_DEPLOYMENT_TARGET
+            unset DEVELOPER_DIR
+            export SDKROOT="$(/usr/bin/xcrun --sdk macosx --show-sdk-path)"
+
+            if [ ! -d "$SDKROOT" ]; then
+                echo "Error: SDKROOT path does not exist: $SDKROOT"
+                exit 1
+            fi
+
+            # This should not be using any Nix paths
+            # xcode-select --print-path
           '';
         };
       }

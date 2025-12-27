@@ -9,8 +9,6 @@ if ! type brew &>/dev/null; then
     exit 1
 fi
 
-. scripts/local_use_system_clang.sh
-
 # The `-c ...` part is needed for the file transport when testing locally
 git -c protocol.file.allow=always submodule update --init --recursive
 

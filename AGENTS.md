@@ -8,4 +8,4 @@ The project also uses Nix for some dependencies which requires special commands 
 
 # Commands
 
-To build the Rust code: `(cd rume && zsh -c '. ../scripts/local_use_system_clang.sh && make rust-code')`
+To build the Rust code and run its tests: `(cd rume && make rust-code)`

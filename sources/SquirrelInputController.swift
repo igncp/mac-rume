@@ -12,14 +12,18 @@ final class SquirrelInputController: IMKInputController {
   private static var unknownAppCnt: UInt = 0
 
   private weak var client: IMKTextInput?
+
   private let rimeAPI: RimeApi_stdbool = rime_get_api_stdbool().pointee
-  private var rumeAPI: UnsafeMutablePointer<RumeC>!
+  private var rumeInstance: UnsafeMutablePointer<RumeC>!
 
   private var preedit: String = ""
   private var selRange: NSRange = .empty
   private var caretPos: Int = 0
   private var lastModifiers: NSEvent.ModifierFlags = .init()
-  private var session: RimeSessionId = 0
+
+  private var rumeSession: RumeSessionIdC = 0
+  private var rimeSession: RimeSessionId = 0
+
   private var schemaId: String = ""
   private var inlinePreedit = false
   private var inlineCandidate = false
@@ -49,9 +53,9 @@ final class SquirrelInputController: IMKInputController {
     // Returning false means the original key down will be passed on to the client.
     var handled = false
 
-    if session == 0 || !rimeAPI.find_session(session) {
-      createSession()
-      if session == 0 {
+    if rimeSession == 0 || !rimeAPI.find_session(rimeSession) {
+      createRimeSession()
+      if rimeSession == 0 {
         return false
       }
     }
@@ -125,7 +129,7 @@ final class SquirrelInputController: IMKInputController {
       let rimeModifiers = SquirrelKeycode.osxModifiersToRime(
         modifiers: modifiers
       )
-      if rume_process_key(rumeAPI, event.keyCode, rimeModifiers)
+      if rume_process_key(rumeInstance, rumeSession, event.keyCode, rimeModifiers)
         == RumeKERHandled
       {
         handled = true
@@ -165,7 +169,7 @@ final class SquirrelInputController: IMKInputController {
   }
 
   func selectCandidate(_ index: Int) -> Bool {
-    let success = rimeAPI.select_candidate_on_current_page(session, index)
+    let success = rimeAPI.select_candidate_on_current_page(rimeSession, index)
     if success {
       rimeUpdate()
     }
@@ -175,7 +179,7 @@ final class SquirrelInputController: IMKInputController {
   // swiftlint:disable:next identifier_name
   func page(up: Bool) -> Bool {
     var handled = false
-    handled = rimeAPI.change_page(session, up)
+    handled = rimeAPI.change_page(rimeSession, up)
     if handled {
       rimeUpdate()
     }
@@ -183,19 +187,19 @@ final class SquirrelInputController: IMKInputController {
   }
 
   func moveCaret(forward: Bool) -> Bool {
-    let currentCaretPos = rimeAPI.get_caret_pos(session)
-    guard let input = rimeAPI.get_input(session) else { return false }
+    let currentCaretPos = rimeAPI.get_caret_pos(rimeSession)
+    guard let input = rimeAPI.get_input(rimeSession) else { return false }
     if forward {
       if currentCaretPos <= 0 {
         return false
       }
-      rimeAPI.set_caret_pos(session, currentCaretPos - 1)
+      rimeAPI.set_caret_pos(rimeSession, currentCaretPos - 1)
     } else {
       let inputStr = String(cString: input)
       if currentCaretPos >= inputStr.utf8.count {
         return false
       }
-      rimeAPI.set_caret_pos(session, currentCaretPos + 1)
+      rimeAPI.set_caret_pos(rimeSession, currentCaretPos + 1)
     }
     rimeUpdate()
     return true
@@ -230,7 +234,7 @@ final class SquirrelInputController: IMKInputController {
     self.client = client as? IMKTextInput
     super.init(server: server, delegate: delegate, client: client)
 
-    rumeAPI = "MacRume".withCString { appNameCStr in
+    rumeInstance = "MacRume".withCString { appNameCStr in
       SquirrelApp.logDir.path.withCString { logDirCStr in
         var cfg = RumeNewConfigC(
           app_name: appNameCStr,
@@ -242,9 +246,10 @@ final class SquirrelInputController: IMKInputController {
         }
       }
     }
-    rume_init(rumeAPI)
+    rume_init(rumeInstance)
 
-    createSession()
+    createRimeSession()
+    createRumeSession()
   }
 
   override func deactivateServer(_ sender: Any!) {
@@ -269,10 +274,10 @@ final class SquirrelInputController: IMKInputController {
     self.client ?= sender as? IMKTextInput
     // print("[DEBUG] commitComposition: \(sender ?? "nil")")
     //  commit raw input
-    if session != 0 {
-      if let input = rimeAPI.get_input(session) {
+    if rimeSession != 0 {
+      if let input = rimeAPI.get_input(rimeSession) {
         commit(string: String(cString: input))
-        rimeAPI.clear_composition(session)
+        rimeAPI.clear_composition(rimeSession)
       }
     }
   }
@@ -356,8 +361,8 @@ final class SquirrelInputController: IMKInputController {
 
   deinit {
     destroySession()
-    rume_free(rumeAPI)
-    rumeAPI = nil
+    rume_free(rumeInstance)
+    rumeInstance = nil
   }
 }
 
@@ -366,11 +371,11 @@ extension SquirrelInputController {
   fileprivate func onChordTimer(_: Timer) {
     // chord release triggered by timer
     var processedKeys = false
-    if chordKeyCount > 0 && session != 0 {
+    if chordKeyCount > 0 && rimeSession != 0 {
       // simulate key-ups
       for i in 0..<chordKeyCount {
         let handled = rimeAPI.process_key(
-          session,
+          rimeSession,
           Int32(chordKeyCodes[i]),
           Int32(chordModifiers[i] | kReleaseMask.rawValue)
         )
@@ -424,19 +429,23 @@ extension SquirrelInputController {
     }
   }
 
-  fileprivate func createSession() {
+  fileprivate func createRumeSession() {
+    rumeSession = rume_create_session(rumeInstance)
+  }
+
+  fileprivate func createRimeSession() {
     let app =
       client?.bundleIdentifier()
       ?? {
         SquirrelInputController.unknownAppCnt &+= 1
         return "UnknownApp\(SquirrelInputController.unknownAppCnt)"
       }()
-    print("createSession: \(app)")
+    print("createRimeSession: \(app)")
     currentApp = app
-    session = rimeAPI.create_session()
+    rimeSession = rimeAPI.create_session()
     schemaId = ""
 
-    if session != 0 {
+    if rimeSession != 0 {
       updateAppOptions()
     }
   }
@@ -450,16 +459,16 @@ extension SquirrelInputController {
     ) {
       for (key, value) in appOptions {
         print("set app option: \(key) = \(value)")
-        rimeAPI.set_option(session, key, value)
+        rimeAPI.set_option(rimeSession, key, value)
       }
     }
   }
 
   fileprivate func destroySession() {
     // print("[DEBUG] destroySession:")
-    if session != 0 {
-      _ = rimeAPI.destroy_session(session)
-      session = 0
+    if rimeSession != 0 {
+      _ = rimeAPI.destroy_session(rimeSession)
+      rimeSession = 0
     }
     clearChord()
   }
@@ -472,17 +481,17 @@ extension SquirrelInputController {
 
     // with linear candidate list, arrow keys may behave differently.
     if let panel = NSApp.squirrelAppDelegate.panel {
-      if panel.linear != rimeAPI.get_option(session, "_linear") {
-        rimeAPI.set_option(session, "_linear", panel.linear)
+      if panel.linear != rimeAPI.get_option(rimeSession, "_linear") {
+        rimeAPI.set_option(rimeSession, "_linear", panel.linear)
       }
       // with vertical text, arrow keys may behave differently.
-      if panel.vertical != rimeAPI.get_option(session, "_vertical") {
-        rimeAPI.set_option(session, "_vertical", panel.vertical)
+      if panel.vertical != rimeAPI.get_option(rimeSession, "_vertical") {
+        rimeAPI.set_option(rimeSession, "_vertical", panel.vertical)
       }
     }
 
     let handled = rimeAPI.process_key(
-      session,
+      rimeSession,
       Int32(rimeKeycode),
       Int32(rimeModifiers)
     )
@@ -496,10 +505,10 @@ extension SquirrelInputController {
         || ((rimeModifiers & kControlMask.rawValue != 0)
           && (rimeKeycode == XK_c || rimeKeycode == XK_C
             || rimeKeycode == XK_bracketleft))
-      if isVimBackInCommandMode && rimeAPI.get_option(session, "vim_mode")
-        && !rimeAPI.get_option(session, "ascii_mode")
+      if isVimBackInCommandMode && rimeAPI.get_option(rimeSession, "vim_mode")
+        && !rimeAPI.get_option(rimeSession, "ascii_mode")
       {
-        rimeAPI.set_option(session, "ascii_mode", true)
+        rimeAPI.set_option(rimeSession, "ascii_mode", true)
         // print("[DEBUG] turned Chinese mode off in vim-like editor's command mode")
       }
     } else {
@@ -511,7 +520,7 @@ extension SquirrelInputController {
         default:
           false
         }
-      if isChordingKey && rimeAPI.get_option(session, "_chord_typing") {
+      if isChordingKey && rimeAPI.get_option(rimeSession, "_chord_typing") {
         updateChord(keycode: rimeKeycode, modifiers: rimeModifiers)
       } else if (rimeModifiers & kReleaseMask.rawValue) == 0 {
         // non-chording key pressed
@@ -525,7 +534,7 @@ extension SquirrelInputController {
   // swiftlint:disable:next cyclomatic_complexity
   fileprivate func rimeUpdate() {
     var commitText = RimeCommit.rimeStructInit()
-    if rimeAPI.get_commit(session, &commitText) {
+    if rimeAPI.get_commit(rimeSession, &commitText) {
       if let text = commitText.text {
         commit(string: String(cString: text))
       }
@@ -533,7 +542,7 @@ extension SquirrelInputController {
     }
 
     var status = RimeStatus_stdbool.rimeStructInit()
-    if rimeAPI.get_status(session, &status) {
+    if rimeAPI.get_status(rimeSession, &status) {
       // enable schema specific ui style
       // swiftlint:disable:next identifier_name
       if let schema_id = status.schema_id,
@@ -545,20 +554,20 @@ extension SquirrelInputController {
         if let panel = NSApp.squirrelAppDelegate.panel {
           inlinePreedit =
             (panel.inlinePreedit
-              && !rimeAPI.get_option(session, "no_inline"))
-            || rimeAPI.get_option(session, "inline")
+              && !rimeAPI.get_option(rimeSession, "no_inline"))
+            || rimeAPI.get_option(rimeSession, "inline")
           inlineCandidate =
             panel.inlineCandidate
-            && !rimeAPI.get_option(session, "no_inline")
+            && !rimeAPI.get_option(rimeSession, "no_inline")
           // if not inline, embed soft cursor in preedit string
-          rimeAPI.set_option(session, "soft_cursor", !inlinePreedit)
+          rimeAPI.set_option(rimeSession, "soft_cursor", !inlinePreedit)
         }
       }
       _ = rimeAPI.free_status(&status)
     }
 
     var ctx = RimeContext_stdbool.rimeStructInit()
-    if rimeAPI.get_context(session, &ctx) {
+    if rimeAPI.get_context(rimeSession, &ctx) {
       // update preedit text
       let preedit =
         ctx.composition.preedit.map({ String(cString: $0) }) ?? ""
@@ -669,7 +678,7 @@ extension SquirrelInputController {
       var candidates = [String]()
       var comments = [String]()
       var labels = [String]()
-      if !rimeAPI.get_option(session, "_hide_candidate") {
+      if !rimeAPI.get_option(rimeSession, "_hide_candidate") {
         for i in 0..<numCandidates {
           let candidate = ctx.menu.candidates[i]
           candidates.append(

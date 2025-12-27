@@ -107,42 +107,45 @@ final class SquirrelTheme {
   private(set) lazy var attrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: candidateTextColor,
     .font: font,
-    .baselineOffset: baseOffset
+    .baselineOffset: baseOffset,
   ]
   private(set) lazy var highlightedAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: highlightedCandidateTextColor,
     .font: font,
-    .baselineOffset: baseOffset
+    .baselineOffset: baseOffset,
   ]
   private(set) lazy var labelAttrs: [NSAttributedString.Key: Any] = [
-    .foregroundColor: candidateLabelColor ?? blendColor(foregroundColor: self.candidateTextColor, backgroundColor: self.backgroundColor),
+    .foregroundColor: candidateLabelColor
+      ?? blendColor(foregroundColor: self.candidateTextColor, backgroundColor: self.backgroundColor),
     .font: labelFont,
-    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - labelFont.pointSize) / 2.5 : 0)
+    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - labelFont.pointSize) / 2.5 : 0),
   ]
   private(set) lazy var labelHighlightedAttrs: [NSAttributedString.Key: Any] = [
-    .foregroundColor: highlightedCandidateLabelColor ?? blendColor(foregroundColor: highlightedCandidateTextColor, backgroundColor: highlightedBackColor),
+    .foregroundColor: highlightedCandidateLabelColor
+      ?? blendColor(
+        foregroundColor: highlightedCandidateTextColor, backgroundColor: highlightedBackColor),
     .font: labelFont,
-    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - labelFont.pointSize) / 2.5 : 0)
+    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - labelFont.pointSize) / 2.5 : 0),
   ]
   private(set) lazy var commentAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: commentTextColor ?? candidateTextColor,
     .font: commentFont,
-    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - commentFont.pointSize) / 2.5 : 0)
+    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - commentFont.pointSize) / 2.5 : 0),
   ]
   private(set) lazy var commentHighlightedAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: highlightedCommentTextColor ?? highlightedCandidateTextColor,
     .font: commentFont,
-    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - commentFont.pointSize) / 2.5 : 0)
+    .baselineOffset: baseOffset + (!vertical ? (font.pointSize - commentFont.pointSize) / 2.5 : 0),
   ]
   private(set) lazy var preeditAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: textColor,
     .font: font,
-    .baselineOffset: baseOffset
+    .baselineOffset: baseOffset,
   ]
   private(set) lazy var preeditHighlightedAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: highlightedTextColor,
     .font: font,
-    .baselineOffset: baseOffset
+    .baselineOffset: baseOffset,
   ]
 
   private(set) lazy var firstParagraphStyle: NSParagraphStyle = {
@@ -163,16 +166,18 @@ final class SquirrelTheme {
     style.lineSpacing = linespace
     return style as NSParagraphStyle
   }()
-  private(set) lazy var edgeInset: NSSize = if self.vertical {
-    NSSize(width: borderHeight + cornerRadius, height: borderWidth + cornerRadius)
-  } else {
-    NSSize(width: borderWidth + cornerRadius, height: borderHeight + cornerRadius)
-  }
+  private(set) lazy var edgeInset: NSSize =
+    if self.vertical {
+      NSSize(width: borderHeight + cornerRadius, height: borderWidth + cornerRadius)
+    } else {
+      NSSize(width: borderWidth + cornerRadius, height: borderHeight + cornerRadius)
+    }
   private(set) lazy var borderLineWidth: CGFloat = min(borderHeight, borderWidth)
   private(set) var candidateFormat: String {
     get {
       _candidateFormat
-    } set {
+    }
+    set {
       var newTemplate = newValue
       if newTemplate.contains(/%@/) {
         newTemplate.replace(/%@/, with: "[candidate] [comment]")
@@ -229,20 +234,30 @@ final class SquirrelTheme {
         let prefix = "preset_color_schemes/\(colorScheme)"
         colorSpace = .from(name: config.getString("\(prefix)/color_space") ?? "")
         backgroundColor ?= config.getColor("\(prefix)/back_color", inSpace: colorSpace)
-        highlightedPreeditColor = config.getColor("\(prefix)/hilited_back_color", inSpace: colorSpace)
-        highlightedBackColor = config.getColor("\(prefix)/hilited_candidate_back_color", inSpace: colorSpace) ?? highlightedPreeditColor
-        preeditBackgroundColor = config.getColor("\(prefix)/preedit_back_color", inSpace: colorSpace)
+        highlightedPreeditColor = config.getColor(
+          "\(prefix)/hilited_back_color", inSpace: colorSpace)
+        highlightedBackColor =
+          config.getColor("\(prefix)/hilited_candidate_back_color", inSpace: colorSpace)
+          ?? highlightedPreeditColor
+        preeditBackgroundColor = config.getColor(
+          "\(prefix)/preedit_back_color", inSpace: colorSpace)
         candidateBackColor = config.getColor("\(prefix)/candidate_back_color", inSpace: colorSpace)
         borderColor = config.getColor("\(prefix)/border_color", inSpace: colorSpace)
 
         textColor ?= config.getColor("\(prefix)/text_color", inSpace: colorSpace)
-        highlightedTextColor = config.getColor("\(prefix)/hilited_text_color", inSpace: colorSpace) ?? textColor
-        candidateTextColor = config.getColor("\(prefix)/candidate_text_color", inSpace: colorSpace) ?? textColor
-        highlightedCandidateTextColor = config.getColor("\(prefix)/hilited_candidate_text_color", inSpace: colorSpace) ?? highlightedTextColor
+        highlightedTextColor =
+          config.getColor("\(prefix)/hilited_text_color", inSpace: colorSpace) ?? textColor
+        candidateTextColor =
+          config.getColor("\(prefix)/candidate_text_color", inSpace: colorSpace) ?? textColor
+        highlightedCandidateTextColor =
+          config.getColor("\(prefix)/hilited_candidate_text_color", inSpace: colorSpace)
+          ?? highlightedTextColor
         candidateLabelColor = config.getColor("\(prefix)/label_color", inSpace: colorSpace)
-        highlightedCandidateLabelColor = config.getColor("\(prefix)/hilited_candidate_label_color", inSpace: colorSpace)
+        highlightedCandidateLabelColor = config.getColor(
+          "\(prefix)/hilited_candidate_label_color", inSpace: colorSpace)
         commentTextColor = config.getColor("\(prefix)/comment_text_color", inSpace: colorSpace)
-        highlightedCommentTextColor = config.getColor("\(prefix)/hilited_comment_text_color", inSpace: colorSpace)
+        highlightedCommentTextColor = config.getColor(
+          "\(prefix)/hilited_comment_text_color", inSpace: colorSpace)
 
         // the following per-color-scheme configurations, if exist, will
         // override configurations with the same name under the global 'style'
@@ -286,8 +301,8 @@ final class SquirrelTheme {
   }
 }
 
-private extension SquirrelTheme {
-  func combineFonts(_ fonts: [NSFont], size: CGFloat?) -> NSFont? {
+extension SquirrelTheme {
+  fileprivate func combineFonts(_ fonts: [NSFont], size: CGFloat?) -> NSFont? {
     if fonts.count == 0 { return nil }
     if fonts.count == 1 {
       if let size = size {
@@ -296,12 +311,14 @@ private extension SquirrelTheme {
         return fonts[0]
       }
     }
-    let attribute = [NSFontDescriptor.AttributeName.cascadeList: fonts[1...].map { $0.fontDescriptor } ]
+    let attribute = [
+      NSFontDescriptor.AttributeName.cascadeList: fonts[1...].map { $0.fontDescriptor }
+    ]
     let fontDescriptor = fonts[0].fontDescriptor.addingAttributes(attribute)
     return NSFont.init(descriptor: fontDescriptor, size: size ?? fonts[0].pointSize)
   }
 
-  func decodeFonts(from fontString: String?) -> [NSFont] {
+  fileprivate func decodeFonts(from fontString: String?) -> [NSFont] {
     guard let fontString = fontString else { return [] }
     var seenFontFamilies = Set<String>()
     let fontStrings = fontString.split(separator: ",")
@@ -330,15 +347,20 @@ private extension SquirrelTheme {
     return fonts
   }
 
-  func blendColor(foregroundColor: NSColor, backgroundColor: NSColor?) -> NSColor {
+  fileprivate func blendColor(foregroundColor: NSColor, backgroundColor: NSColor?) -> NSColor {
     let foregroundColor = foregroundColor.usingColorSpace(NSColorSpace.deviceRGB)!
     let backgroundColor = (backgroundColor ?? NSColor.gray).usingColorSpace(NSColorSpace.deviceRGB)!
     func blend(foreground: CGFloat, background: CGFloat) -> CGFloat {
       return (foreground * 2 + background) / 3
     }
-    return NSColor(deviceRed: blend(foreground: foregroundColor.redComponent, background: backgroundColor.redComponent),
-                   green: blend(foreground: foregroundColor.greenComponent, background: backgroundColor.greenComponent),
-                   blue: blend(foreground: foregroundColor.blueComponent, background: backgroundColor.blueComponent),
-                   alpha: blend(foreground: foregroundColor.alphaComponent, background: backgroundColor.alphaComponent))
+    return NSColor(
+      deviceRed: blend(
+        foreground: foregroundColor.redComponent, background: backgroundColor.redComponent),
+      green: blend(
+        foreground: foregroundColor.greenComponent, background: backgroundColor.greenComponent),
+      blue: blend(
+        foreground: foregroundColor.blueComponent, background: backgroundColor.blueComponent),
+      alpha: blend(
+        foreground: foregroundColor.alphaComponent, background: backgroundColor.alphaComponent))
   }
 }

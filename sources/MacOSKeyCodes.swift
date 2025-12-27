@@ -5,8 +5,8 @@
 //  Created by Leo Liu on 5/9/24.
 //
 
-import Carbon
 import AppKit
+import Carbon
 
 struct SquirrelKeycode {
 
@@ -30,7 +30,9 @@ struct SquirrelKeycode {
     return ret
   }
 
-  static func osxKeycodeToRime(keycode: UInt16, keychar: Character?, shift: Bool, caps: Bool) -> UInt32 {
+  static func osxKeycodeToRime(keycode: UInt16, keychar: Character?, shift: Bool, caps: Bool)
+    -> UInt32
+  {
     if let code = keycodeMappings[Int(keycode)] {
       return UInt32(code)
     }
@@ -145,7 +147,7 @@ struct SquirrelKeycode {
     kVK_JIS_Underscore: XK_underscore,
     kVK_JIS_KeypadComma: XK_comma,
     kVK_JIS_Eisu: XK_Eisu_Shift,
-    kVK_JIS_Kana: XK_Kana_Shift
+    kVK_JIS_Kana: XK_Kana_Shift,
   ]
 
   private static let additionalCodeMappings: [Int: Int32] = [
@@ -203,6 +205,6 @@ struct SquirrelKeycode {
     kVK_ANSI_W: XK_w,
     kVK_ANSI_X: XK_x,
     kVK_ANSI_Y: XK_y,
-    kVK_ANSI_Z: XK_z
+    kVK_ANSI_Z: XK_z,
   ]
 }

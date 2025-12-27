@@ -20,7 +20,9 @@ final class SquirrelInstaller {
     let sourceList = TISCreateInputSourceList(nil, true).takeRetainedValue() as! [TISInputSource]
     for inputSource in sourceList {
       let sourceIDRef = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID)
-      guard let sourceID = unsafeBitCast(sourceIDRef, to: CFString?.self) as String? else { continue }
+      guard let sourceID = unsafeBitCast(sourceIDRef, to: CFString?.self) as String? else {
+        continue
+      }
       // print("[DEBUG] Examining input source: \(sourceID)")
       inputSources[sourceID] = inputSource
     }
@@ -80,11 +82,13 @@ final class SquirrelInstaller {
     }
     for (mode, inputSource) in getInputSource(modes: [modeToSelect]) {
       if let enabled = getBool(for: inputSource, key: kTISPropertyInputSourceIsEnabled),
-         let selectable = getBool(for: inputSource, key: kTISPropertyInputSourceIsSelectCapable),
-         let selected = getBool(for: inputSource, key: kTISPropertyInputSourceIsSelected),
-         enabled && selectable && !selected {
+        let selectable = getBool(for: inputSource, key: kTISPropertyInputSourceIsSelectCapable),
+        let selected = getBool(for: inputSource, key: kTISPropertyInputSourceIsSelected),
+        enabled && selectable && !selected
+      {
         let error = TISSelectInputSource(inputSource)
-        print("Selection \(error == noErr ? "succeeds" : "fails") for input source: \(mode.rawValue)")
+        print(
+          "Selection \(error == noErr ? "succeeds" : "fails") for input source: \(mode.rawValue)")
       } else {
         print("Failed to select \(mode.rawValue)")
       }

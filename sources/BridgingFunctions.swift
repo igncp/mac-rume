@@ -32,7 +32,9 @@ extension DataSizeable {
     return value
   }
 
-  mutating func setCString(_ swiftString: String, to keypath: WritableKeyPath<Self, UnsafePointer<CChar>?>) {
+  mutating func setCString(
+    _ swiftString: String, to keypath: WritableKeyPath<Self, UnsafePointer<CChar>?>
+  ) {
     swiftString.withCString { cStr in
       // Duplicate the string to create a persisting C string
       let mutableCStr = strdup(cStr)
@@ -47,13 +49,13 @@ extension DataSizeable {
 
 infix operator ?= : AssignmentPrecedence
 // swiftlint:disable:next operator_whitespace
-func ?=<T>(left: inout T, right: T?) {
+func ?= <T>(left: inout T, right: T?) {
   if let right = right {
     left = right
   }
 }
 // swiftlint:disable:next operator_whitespace
-func ?=<T>(left: inout T?, right: T?) {
+func ?= <T>(left: inout T?, right: T?) {
   if let right = right {
     left = right
   }

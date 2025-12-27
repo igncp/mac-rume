@@ -106,7 +106,9 @@ final class SquirrelConfig {
     _ = rimeAPI.config_begin_map(&iterator, &config, rootKey)
     while rimeAPI.config_next(&iterator) {
       // print("[DEBUG] option[\(iterator.index)]: \(String(cString: iterator.key)), path: (\(String(cString: iterator.path))")
-      if let key = iterator.key, let path = iterator.path, let value = getBool(String(cString: path)) {
+      if let key = iterator.key, let path = iterator.path,
+        let value = getBool(String(cString: path))
+      {
         appOptions[String(cString: key)] = value
       }
     }
@@ -115,35 +117,49 @@ final class SquirrelConfig {
   }
 }
 
-private extension SquirrelConfig {
-  func cachedValue<T>(of: T.Type, forKey key: String) -> T? {
+extension SquirrelConfig {
+  fileprivate func cachedValue<T>(of: T.Type, forKey key: String) -> T? {
     return cache[key] as? T
   }
 
-  func color(from colorStr: String, inSpace colorSpace: SquirrelTheme.RimeColorSpace) -> NSColor? {
-    if let matched = try? /0x([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})/.wholeMatch(in: colorStr) {
+  fileprivate func color(from colorStr: String, inSpace colorSpace: SquirrelTheme.RimeColorSpace)
+    -> NSColor?
+  {
+    if let matched = try? /0x([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})/
+      .wholeMatch(in: colorStr)
+    {
       let (_, alpha, blue, green, red) = matched.output
-      return color(alpha: Int(alpha, radix: 16)!, red: Int(red, radix: 16)!, green: Int(green, radix: 16)!, blue: Int(blue, radix: 16)!, colorSpace: colorSpace)
-    } else if let matched = try? /0x([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})/.wholeMatch(in: colorStr) {
+      return color(
+        alpha: Int(alpha, radix: 16)!, red: Int(red, radix: 16)!, green: Int(green, radix: 16)!,
+        blue: Int(blue, radix: 16)!, colorSpace: colorSpace)
+    } else if let matched = try? /0x([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})/.wholeMatch(
+      in: colorStr)
+    {
       let (_, blue, green, red) = matched.output
-      return color(alpha: 255, red: Int(red, radix: 16)!, green: Int(green, radix: 16)!, blue: Int(blue, radix: 16)!, colorSpace: colorSpace)
+      return color(
+        alpha: 255, red: Int(red, radix: 16)!, green: Int(green, radix: 16)!,
+        blue: Int(blue, radix: 16)!, colorSpace: colorSpace)
     } else {
       return nil
     }
   }
 
-  func color(alpha: Int, red: Int, green: Int, blue: Int, colorSpace: SquirrelTheme.RimeColorSpace) -> NSColor {
+  fileprivate func color(
+    alpha: Int, red: Int, green: Int, blue: Int, colorSpace: SquirrelTheme.RimeColorSpace
+  ) -> NSColor {
     switch colorSpace {
     case .displayP3:
-      return NSColor(displayP3Red: CGFloat(red) / 255,
-                     green: CGFloat(green) / 255,
-                     blue: CGFloat(blue) / 255,
-                     alpha: CGFloat(alpha) / 255)
+      return NSColor(
+        displayP3Red: CGFloat(red) / 255,
+        green: CGFloat(green) / 255,
+        blue: CGFloat(blue) / 255,
+        alpha: CGFloat(alpha) / 255)
     case .sRGB:
-      return NSColor(srgbRed: CGFloat(red) / 255,
-                     green: CGFloat(green) / 255,
-                     blue: CGFloat(blue) / 255,
-                     alpha: CGFloat(alpha) / 255)
+      return NSColor(
+        srgbRed: CGFloat(red) / 255,
+        green: CGFloat(green) / 255,
+        blue: CGFloat(blue) / 255,
+        alpha: CGFloat(alpha) / 255)
     }
   }
 }

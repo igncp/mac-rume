@@ -5,11 +5,13 @@
 //  Created by Leo Liu on 5/6/24.
 //
 
-import UserNotifications
-import Sparkle
 import AppKit
+import Sparkle
+import UserNotifications
 
-final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUStandardUserDriverDelegate, UNUserNotificationCenterDelegate {
+final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate,
+  SPUStandardUserDriverDelegate, UNUserNotificationCenterDelegate
+{
   static let rimeWikiURL = URL(string: "https://github.com/rime/home/wiki")!
   static let updateNotificationIdentifier = "SquirrelUpdateNotification"
   static let notificationIdentifier = "SquirrelNotification"
@@ -18,34 +20,46 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
   var config: SquirrelConfig?
   var panel: SquirrelPanel?
   var enableNotifications = false
-  let updateController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+  let updateController = SPUStandardUpdaterController(
+    startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
   var supportsGentleScheduledUpdateReminders: Bool {
     true
   }
 
-  func standardUserDriverWillHandleShowingUpdate(_ handleShowingUpdate: Bool, forUpdate update: SUAppcastItem, state: SPUUserUpdateState) {
+  func standardUserDriverWillHandleShowingUpdate(
+    _ handleShowingUpdate: Bool, forUpdate update: SUAppcastItem, state: SPUUserUpdateState
+  ) {
     NSApp.setActivationPolicy(.regular)
     if !state.userInitiated {
       NSApp.dockTile.badgeLabel = "1"
       let content = UNMutableNotificationContent()
       content.title = NSLocalizedString("A new update is available", comment: "Update")
-      content.body = NSLocalizedString("Version [version] is now available", comment: "Update").replacingOccurrences(of: "[version]", with: update.displayVersionString)
-      let request = UNNotificationRequest(identifier: Self.updateNotificationIdentifier, content: content, trigger: nil)
+      content.body = NSLocalizedString("Version [version] is now available", comment: "Update")
+        .replacingOccurrences(of: "[version]", with: update.displayVersionString)
+      let request = UNNotificationRequest(
+        identifier: Self.updateNotificationIdentifier, content: content, trigger: nil)
       UNUserNotificationCenter.current().add(request)
     }
   }
 
   func standardUserDriverDidReceiveUserAttention(forUpdate update: SUAppcastItem) {
     NSApp.dockTile.badgeLabel = ""
-    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Self.updateNotificationIdentifier])
+    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [
+      Self.updateNotificationIdentifier
+    ])
   }
 
   func standardUserDriverWillFinishUpdateSession() {
     NSApp.setActivationPolicy(.accessory)
   }
 
-  func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-    if response.notification.request.identifier == Self.updateNotificationIdentifier && response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    if response.notification.request.identifier == Self.updateNotificationIdentifier
+      && response.actionIdentifier == UNNotificationDefaultActionIdentifier
+    {
       updateController.updater.checkForUpdates()
     }
 
@@ -105,14 +119,17 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
       }
     }
     center.getNotificationSettings { settings in
-      if (settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional) && settings.alertSetting == .enabled {
+      if (settings.authorizationStatus == .authorized
+        || settings.authorizationStatus == .provisional) && settings.alertSetting == .enabled
+      {
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("Squirrel", comment: "")
         if let msgText = msgText {
           content.subtitle = msgText
         }
         content.interruptionLevel = .active
-        let request = UNNotificationRequest(identifier: Self.notificationIdentifier, content: content, trigger: nil)
+        let request = UNNotificationRequest(
+          identifier: Self.notificationIdentifier, content: content, trigger: nil)
         center.add(request) { error in
           if let error = error {
             print("User notification request error: \(error.localizedDescription)")
@@ -126,7 +143,10 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     createDirIfNotExist(path: SquirrelApp.userDir)
     createDirIfNotExist(path: SquirrelApp.logDir)
     // swiftlint:disable identifier_name
-    let notification_handler: @convention(c) (UnsafeMutableRawPointer?, RimeSessionId, UnsafePointer<CChar>?, UnsafePointer<CChar>?) -> Void = notificationHandler
+    let notification_handler:
+      @convention(c) (
+        UnsafeMutableRawPointer?, RimeSessionId, UnsafePointer<CChar>?, UnsafePointer<CChar>?
+      ) -> Void = notificationHandler
     let context_object = Unmanaged.passUnretained(self).toOpaque()
     // swiftlint:enable identifier_name
     rimeAPI.set_notification_handler(notification_handler, context_object)
@@ -137,7 +157,9 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
     squirrelTraits.setCString(SquirrelApp.logDir.path(), to: \.log_dir)
     squirrelTraits.setCString("Rume", to: \.distribution_code_name)
     squirrelTraits.setCString("Rume", to: \.distribution_name)
-    squirrelTraits.setCString(Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String, to: \.distribution_version)
+    squirrelTraits.setCString(
+      Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as! String,
+      to: \.distribution_version)
     squirrelTraits.setCString("rime.squirrel", to: \.app_name)
     rimeAPI.setup(&squirrelTraits)
   }
@@ -188,7 +210,8 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
   // prevent freezing the system
   func problematicLaunchDetected() -> Bool {
     var detected = false
-    let logFile = FileManager.default.temporaryDirectory.appendingPathComponent("squirrel_launch.json", conformingTo: .json)
+    let logFile = FileManager.default.temporaryDirectory.appendingPathComponent(
+      "squirrel_launch.json", conformingTo: .json)
     // print("[DEBUG] archive: \(logFile)")
     do {
       let archive = try Data(contentsOf: logFile, options: [.uncached])
@@ -198,7 +221,9 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
       if previousLaunch.timeIntervalSinceNow >= -2 {
         detected = true
       }
-    } catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError {
+    } catch let error as NSError
+      where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError
+    {
 
     } catch {
       print("Error occurred during processing launch time archive: \(error.localizedDescription)")
@@ -220,11 +245,15 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
   // Input Menu.
   func addObservers() {
     let center = NSWorkspace.shared.notificationCenter
-    center.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: nil, using: workspaceWillPowerOff)
+    center.addObserver(
+      forName: NSWorkspace.willPowerOffNotification, object: nil, queue: nil,
+      using: workspaceWillPowerOff)
 
     let notifCenter = DistributedNotificationCenter.default()
-    notifCenter.addObserver(forName: .init("SquirrelReloadNotification"), object: nil, queue: nil, using: rimeNeedsReload)
-    notifCenter.addObserver(forName: .init("SquirrelSyncNotification"), object: nil, queue: nil, using: rimeNeedsSync)
+    notifCenter.addObserver(
+      forName: .init("SquirrelReloadNotification"), object: nil, queue: nil, using: rimeNeedsReload)
+    notifCenter.addObserver(
+      forName: .init("SquirrelSyncNotification"), object: nil, queue: nil, using: rimeNeedsSync)
   }
 
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -235,19 +264,27 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, SPUSta
 
 }
 
-private func notificationHandler(contextObject: UnsafeMutableRawPointer?, sessionId: RimeSessionId, messageTypeC: UnsafePointer<CChar>?, messageValueC: UnsafePointer<CChar>?) {
-  let delegate: SquirrelApplicationDelegate = Unmanaged<SquirrelApplicationDelegate>.fromOpaque(contextObject!).takeUnretainedValue()
+private func notificationHandler(
+  contextObject: UnsafeMutableRawPointer?, sessionId: RimeSessionId,
+  messageTypeC: UnsafePointer<CChar>?, messageValueC: UnsafePointer<CChar>?
+) {
+  let delegate: SquirrelApplicationDelegate = Unmanaged<SquirrelApplicationDelegate>.fromOpaque(
+    contextObject!
+  ).takeUnretainedValue()
 
   let messageType = messageTypeC.map { String(cString: $0) }
   let messageValue = messageValueC.map { String(cString: $0) }
   if messageType == "deploy" {
     switch messageValue {
     case "start":
-      SquirrelApplicationDelegate.showMessage(msgText: NSLocalizedString("deploy_start", comment: ""))
+      SquirrelApplicationDelegate.showMessage(
+        msgText: NSLocalizedString("deploy_start", comment: ""))
     case "success":
-      SquirrelApplicationDelegate.showMessage(msgText: NSLocalizedString("deploy_success", comment: ""))
+      SquirrelApplicationDelegate.showMessage(
+        msgText: NSLocalizedString("deploy_success", comment: ""))
     case "failure":
-      SquirrelApplicationDelegate.showMessage(msgText: NSLocalizedString("deploy_failure", comment: ""))
+      SquirrelApplicationDelegate.showMessage(
+        msgText: NSLocalizedString("deploy_failure", comment: ""))
     default:
       break
     }
@@ -258,20 +295,25 @@ private func notificationHandler(contextObject: UnsafeMutableRawPointer?, sessio
     return
   }
 
-  if messageType == "schema", let messageValue = messageValue, let schemaName = try? /^[^\/]*\/(.*)$/.firstMatch(in: messageValue)?.output.1 {
+  if messageType == "schema", let messageValue = messageValue,
+    let schemaName = try? /^[^\/]*\/(.*)$/.firstMatch(in: messageValue)?.output.1
+  {
     delegate.showStatusMessage(msgTextLong: String(schemaName), msgTextShort: String(schemaName))
     return
   } else if messageType == "option" {
     let state = messageValue?.first != "!"
-    let optionName = if state {
-      messageValue
-    } else {
-      String(messageValue![messageValue!.index(after: messageValue!.startIndex)...])
-    }
+    let optionName =
+      if state {
+        messageValue
+      } else {
+        String(messageValue![messageValue!.index(after: messageValue!.startIndex)...])
+      }
     if let optionName = optionName {
       optionName.withCString { name in
-        let stateLabelLong = delegate.rimeAPI.get_state_label_abbreviated(sessionId, name, state, false)
-        let stateLabelShort = delegate.rimeAPI.get_state_label_abbreviated(sessionId, name, state, true)
+        let stateLabelLong = delegate.rimeAPI.get_state_label_abbreviated(
+          sessionId, name, state, false)
+        let stateLabelShort = delegate.rimeAPI.get_state_label_abbreviated(
+          sessionId, name, state, true)
         let longLabel = stateLabelLong.str.map { String(cString: $0) }
         let shortLabel = stateLabelShort.str.map { String(cString: $0) }
         delegate.showStatusMessage(msgTextLong: longLabel, msgTextShort: shortLabel)
@@ -280,34 +322,34 @@ private func notificationHandler(contextObject: UnsafeMutableRawPointer?, sessio
   }
 }
 
-private extension SquirrelApplicationDelegate {
-  func showStatusMessage(msgTextLong: String?, msgTextShort: String?) {
+extension SquirrelApplicationDelegate {
+  fileprivate func showStatusMessage(msgTextLong: String?, msgTextShort: String?) {
     if !(msgTextLong ?? "").isEmpty || !(msgTextShort ?? "").isEmpty {
       panel?.updateStatus(long: msgTextLong ?? "", short: msgTextShort ?? "")
     }
   }
 
-  func shutdownRime() {
+  fileprivate func shutdownRime() {
     config?.close()
     rimeAPI.finalize()
   }
 
-  func workspaceWillPowerOff(_: Notification) {
+  fileprivate func workspaceWillPowerOff(_: Notification) {
     print("Finalizing before logging out.")
     self.shutdownRime()
   }
 
-  func rimeNeedsReload(_: Notification) {
+  fileprivate func rimeNeedsReload(_: Notification) {
     print("Reloading rime on demand.")
     self.deploy()
   }
 
-  func rimeNeedsSync(_: Notification) {
+  fileprivate func rimeNeedsSync(_: Notification) {
     print("Sync rime on demand.")
     self.syncUserData()
   }
 
-  func createDirIfNotExist(path: URL) {
+  fileprivate func createDirIfNotExist(path: URL) {
     let fileManager = FileManager.default
     if !fileManager.fileExists(atPath: path.path()) {
       do {

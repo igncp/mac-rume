@@ -1,6 +1,6 @@
 [submodule "librime"]
 	path = rume
-	url = /Users/igncp/development/mac-rume/rume
+	url = https://github.com/igncp/rume.git
 	ignore = dirty
 [submodule "plum"]
 	path = plum

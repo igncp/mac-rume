@@ -11,7 +11,7 @@ if [ -n "$(echo $PWD | grep mac-rume-test)" ]; then
 fi
 
 mkdir -p ~/development
-rm -rf ~/development/mac-rume-test
+sudo rm -rf ~/development/mac-rume-test
 git clone ~/development/mac-rume ~/development/mac-rume-test
 cd ~/development/mac-rume-test
 

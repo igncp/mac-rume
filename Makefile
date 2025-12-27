@@ -3,10 +3,6 @@
 all: release
 install: install-release
 
-# Changed from `dist` to `build` to use the built one
-RIME_BIN_DIR = rume/build/bin
-RIME_LIB_DIR = rume/build/lib
-RUME_API_DIR = rume/target/release
 DERIVED_DATA_PATH = build
 
 RIME_LIBRARY_FILE_NAME = librime.1.dylib
@@ -38,7 +34,7 @@ RIME_PACKAGE_INSTALLER = plum/rime-install
 INSTALL_NAME_TOOL = $(shell xcrun -find install_name_tool)
 INSTALL_NAME_TOOL_ARGS = -add_rpath @loader_path/../Frameworks
 
-.PHONY: rume copy-rime-binaries
+.PHONY: rume
 
 $(RIME_LIBRARY):
 	$(MAKE) rume
@@ -48,21 +44,9 @@ $(RIME_DEPS):
 
 rume: $(RIME_DEPS)
 	$(MAKE) -C rume release install
-	$(MAKE) copy-rime-binaries
 
 librime-build:
 	bash scripts/build_librime.sh
-
-copy-rime-binaries:
-	mkdir -p bin lib
-	cp -L $(RIME_LIB_DIR)/$(RIME_LIBRARY_FILE_NAME) lib/
-	cp -pR $(RIME_LIB_DIR)/rime-plugins lib/
-	cp $(RIME_BIN_DIR)/rime_deployer bin/
-	cp $(RIME_BIN_DIR)/rime_dict_manager bin/
-	cp $(RUME_API_DIR)/$(RUME_LIBRARY_FILE_NAME) lib/
-	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_deployer
-	$(INSTALL_NAME_TOOL) $(INSTALL_NAME_TOOL_ARGS) bin/rime_dict_manager
-	$(INSTALL_NAME_TOOL) -id @rpath/$(RUME_LIBRARY_FILE_NAME) lib/$(RUME_LIBRARY_FILE_NAME)
 
 .PHONY: data plum-data opencc-data copy-plum-data copy-opencc-data
 
@@ -182,7 +166,7 @@ install-mac-build:
 
 install-release: release permission-check install-mac-build
 
-install-package: librime-build copy-rime-binaries package install-mac-build
+install-package: librime-build package install-mac-build
 
 bootstrap:
 	bash scripts/local_setup.sh

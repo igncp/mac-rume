@@ -2,24 +2,17 @@
 
 set -xeuo pipefail
 
-RUME_BUILD_TYPE="${RUME_BUILD_TYPE:=minimal}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-export RIME_PLUGINS="hchunhui/librime-lua lotem/librime-octagram rime/librime-predict"
-export BOOST_ROOT="$(find $SCRIPT_DIR/../rume/deps -maxdepth 0)/boost-1.89.0"
-export CMAKE_GENERATOR=Ninja
+nix build -o rume-build --impure '.?submodules=1#rume'
+mkdir -p bin lib
 
-cd rume
+cp -Lr rume-build/lib/* lib/
+cp -Lr rume-build/bin/* bin/
 
-sed -i 's|{BOOST_ROOT=|{BOOST_ROOT:-|' ./scripts/install-boost.sh
-bash ./scripts/install-boost.sh
-make deps
+INSTALL_NAME_TOOL="$(xcrun -find install_name_tool)"
 
-./scripts/action-install-plugins-macos.sh || true
-make test
-make install
-
-cd ..
-make copy-rime-binaries
+"$INSTALL_NAME_TOOL" -add_rpath @loader_path/../Frameworks bin/rime_deployer
+"$INSTALL_NAME_TOOL" -add_rpath @loader_path/../Frameworks bin/rime_dict_manager
+"$INSTALL_NAME_TOOL" -id @rpath/librume.dylib lib/librume.dylib
 
 echo "librime build completed."

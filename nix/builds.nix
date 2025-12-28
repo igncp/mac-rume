@@ -100,6 +100,9 @@ in rec {
       rust-cbindgen
       clippy
       gnumake
+      astyle
+      diffutils
+      coreutils
     ];
     installPhase = ''
       mkdir -p $out

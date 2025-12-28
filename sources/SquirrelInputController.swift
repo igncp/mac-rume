@@ -129,11 +129,51 @@ final class SquirrelInputController: IMKInputController {
       let rimeModifiers = SquirrelKeycode.osxModifiersToRime(
         modifiers: modifiers
       )
-      if rume_process_key(rumeInstance, rumeSession, event.keyCode, rimeModifiers)
-        == RumeKERHandled
-      {
+      let rumeKeyEventResult = rume_process_key(
+        rumeInstance,
+        rumeSession,
+        event.keyCode,
+        rimeModifiers
+      )
+
+      if rumeKeyEventResult == RumeKERHandled {
         handled = true
         rumeUpdate()
+        break
+      } else if (rumeKeyEventResult == RumeKEREnabled
+        || rumeKeyEventResult == RumeKERDisabled)
+      {
+        handled = true
+        let isEnabled = rumeKeyEventResult == RumeKEREnabled
+
+        if NSApp.squirrelAppDelegate.enableNotifications,
+          let panel = NSApp.squirrelAppDelegate.panel
+        {
+          let statusMessage =
+            isEnabled
+            ? NSLocalizedString(
+              "Rume enabled",
+              comment: "Status HUD when Rume is enabled"
+            )
+            : NSLocalizedString(
+              "Rume disabled",
+              comment: "Status HUD when Rume is disabled"
+            )
+          panel.updateStatus(long: statusMessage, short: "")
+          panel.update(
+            preedit: "",
+            selRange: NSRange(location: 0, length: 0),
+            caretPos: 0,
+            candidates: [],
+            comments: [],
+            labels: [],
+            highlighted: -1,
+            page: 0,
+            lastPage: true,
+            update: true
+          )
+        }
+
         break
       }
 

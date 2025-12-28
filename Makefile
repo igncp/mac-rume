@@ -110,23 +110,3 @@ install-package: librime-build package install-mac-build
 
 bootstrap:
 	bash scripts/local_setup.sh
-
-.PHONY: clean clean-deps
-
-clean:
-	rm -rf build > /dev/null 2>&1 || true
-	rm build.log > /dev/null 2>&1 || true
-	rm bin/* > /dev/null 2>&1 || true
-	rm lib/* > /dev/null 2>&1 || true
-	rm lib/rime-plugins/* > /dev/null 2>&1 || true
-	rm data/plum/* > /dev/null 2>&1 || true
-	rm data/opencc/* > /dev/null 2>&1 || true
-
-clean-package:
-	rm -rf package/*appcast.xml > /dev/null 2>&1 || true
-	rm -rf package/*.pkg > /dev/null 2>&1 || true
-	rm -rf package/sign_update > /dev/null 2>&1 || true
-
-clean-deps:
-	$(MAKE) -C rume clean
-	rm -rf rume/dist > /dev/null 2>&1 || true

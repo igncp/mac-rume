@@ -17,7 +17,18 @@ cd ~/development/mac-rume-test
 
 git submodule set-url -- rume $HOME/development/mac-rume/rume
 
+# Use all available cores and favor substituters to speed up a clean build.
+CPU_CORES=$(sysctl -n hw.ncpu || echo 4)
+
 env -i PATH="/bin:/usr/bin:$HOME/homebrew/bin" HOME="$HOME" /bin/bash --norc \
-    -c "$HOME/.nix-profile/bin/nix develop --command scripts/local_setup.sh"
+    -c "
+        $HOME/.nix-profile/bin/nix \
+            --option cores $CPU_CORES \
+            --option max-jobs auto \
+            --option http-connections 50 \
+            --accept-flake-config \
+            develop \
+            --command scripts/local_setup.sh
+    "
 
 echo "All setups tested successfully."

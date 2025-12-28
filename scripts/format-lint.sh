@@ -2,9 +2,10 @@
 
 set -e
 
+swift-format format -r -i sources
 swift-format lint -r -s sources
 
-alejandra flake.nix nix/*
+alejandra -q flake.nix nix/*
 
 statix check nix
 statix check flake.nix

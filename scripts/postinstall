@@ -17,5 +17,5 @@ if [ -z "${RIME_NO_PREBUILD}" ]; then
     popd >/dev/null
 fi && (
     /usr/bin/sudo -u "${login_user}" "${squirrel_executable}" --enable-input-source
-    /usr/bin/sudo -u "${login_user}" "${squirrel_executable}" --select-input-source
+    /usr/bin/sudo -u "${login_user}" "${squirrel_executable}" --select-input-source im.rime.inputmethod.Squirrel.Hant
 )

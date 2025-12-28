@@ -22,14 +22,8 @@ OPENCC_DATA = data/opencc/TSCharacters.ocd2 \
 	data/opencc/TSPhrases.ocd2 \
 	data/opencc/t2s.json
 SPARKLE_FRAMEWORK = Frameworks/Sparkle.framework
-SPARKLE_SIGN = package/sign_update
 PACKAGE = package/Squirrel.pkg
 DEPS_CHECK = $(RIME_LIBRARY) $(PLUM_DATA) $(OPENCC_DATA) $(SPARKLE_FRAMEWORK) $(RUME_LIBRARY)
-
-OPENCC_DATA_OUTPUT = rume/share/opencc/*.*
-PLUM_DATA_OUTPUT = plum/output/*.*
-PLUM_OPENCC_OUTPUT = plum/output/opencc/*.*
-RIME_PACKAGE_INSTALLER = plum/rime-install
 
 INSTALL_NAME_TOOL = $(shell xcrun -find install_name_tool)
 INSTALL_NAME_TOOL_ARGS = -add_rpath @loader_path/../Frameworks
@@ -48,36 +42,7 @@ rume: $(RIME_DEPS)
 librime-build:
 	bash scripts/build_librime.sh
 
-.PHONY: data plum-data opencc-data copy-plum-data copy-opencc-data
-
-data: plum-data opencc-data
-
-$(PLUM_DATA):
-	$(MAKE) plum-data
-
-$(OPENCC_DATA):
-	$(MAKE) opencc-data
-
-plum-data:
-	$(MAKE) -C plum
-ifdef PLUM_TAG
-	rime_dir=plum/output bash plum/rime-install $(PLUM_TAG)
-endif
-	$(MAKE) copy-plum-data
-
-opencc-data:
-	$(MAKE) -C rume deps/opencc
-	$(MAKE) copy-opencc-data
-
-copy-plum-data:
-	mkdir -p data/plum
-	cp $(PLUM_DATA_OUTPUT) data/plum/
-	cp $(RIME_PACKAGE_INSTALLER) bin/
-
-copy-opencc-data:
-	mkdir -p data/opencc
-	cp $(OPENCC_DATA_OUTPUT) data/opencc/
-	cp $(PLUM_OPENCC_OUTPUT) data/opencc/ > /dev/null 2>&1 || true
+.PHONY: data plum-data
 
 deps: rume data
 
@@ -104,29 +69,7 @@ debug: $(DEPS_CHECK)
 	bash package/add_data_files
 	xcodebuild -project Squirrel.xcodeproj -configuration Debug -scheme Squirrel -derivedDataPath $(DERIVED_DATA_PATH)  $(BUILD_SETTINGS) build
 
-.PHONY: sparkle copy-sparkle-framework
-
-$(SPARKLE_FRAMEWORK):
-	git submodule update --init --recursive Sparkle
-	$(MAKE) sparkle
-
-sparkle:
-	xcodebuild -project Sparkle/Sparkle.xcodeproj -configuration Release $(BUILD_SETTINGS) build
-	$(MAKE) copy-sparkle-framework
-
-$(SPARKLE_SIGN):
-	xcodebuild -project Sparkle/Sparkle.xcodeproj -scheme sign_update -configuration Release -derivedDataPath Sparkle/build $(BUILD_SETTINGS) build
-	cp Sparkle/build/Build/Products/Release/sign_update package/
-
-copy-sparkle-framework:
-	mkdir -p Frameworks
-	cp -RP Sparkle/build/Release/Sparkle.framework Frameworks/
-
-clean-sparkle:
-	rm -rf Frameworks/* > /dev/null 2>&1 || true
-	rm -rf Sparkle/build > /dev/null 2>&1 || true
-
-.PHONY: package archive
+.PHONY: package
 
 $(PACKAGE):
 ifdef DEV_ID
@@ -142,9 +85,6 @@ ifdef DEV_ID
 endif
 
 package: release $(PACKAGE)
-
-archive: package $(SPARKLE_SIGN)
-	bash package/make_archive
 
 DSTROOT = /Library/Input Methods
 SQUIRREL_APP_ROOT = $(DSTROOT)/Squirrel.app
@@ -188,7 +128,5 @@ clean-package:
 	rm -rf package/sign_update > /dev/null 2>&1 || true
 
 clean-deps:
-	$(MAKE) -C plum clean
 	$(MAKE) -C rume clean
 	rm -rf rume/dist > /dev/null 2>&1 || true
-	$(MAKE) clean-sparkle

@@ -3,11 +3,11 @@
 set -xeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-nix build -o rume-build --impure '.?submodules=1#rume'
+nix build -o nix-rume-build --impure '.?submodules=1#rume'
 mkdir -p bin lib
 
-cp -Lr rume-build/lib/* lib/
-cp -Lr rume-build/bin/* bin/
+cp --no-preserve=mode -Lr nix-rume-build/lib/* lib/
+cp --no-preserve=mode -Lr nix-rume-build/bin/* bin/
 
 INSTALL_NAME_TOOL="$(xcrun -find install_name_tool)"
 

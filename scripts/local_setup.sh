@@ -12,10 +12,7 @@ fi
 # The `-c ...` part is needed for the file transport when testing locally
 git -c protocol.file.allow=always submodule update --init --recursive
 
-swift-format lint -r -s sources
-
-# Should be 3.X
-cmake --version
+bash scripts/format-lint.sh
 
 bash scripts/build_librime.sh
 

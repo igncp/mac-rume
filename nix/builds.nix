@@ -32,7 +32,7 @@
     rev = "4c28f11f451facef809b380502874a48ba964ddb";
     sha256 = "sha256-4KrOYSNN2sjDhnMr4jZxF+0bPwRzj8oDsW0qSX23/dg=";
   };
-in {
+in rec {
   mac-rume-deps = pkgs.stdenvNoCC.mkDerivation {
     pname = "mac-rume-deps";
     version = "unstable";
@@ -64,6 +64,49 @@ in {
       cp rime-install $out/
     '';
   };
+  rume-extension = pkgs.rustPlatform.buildRustPackage {
+    pname = "rume-extension";
+    version = "unstable";
+    src = ../rume/deps/rume_extension;
+    cargoLock = {lockFile = ../rume/deps/rume_extension/Cargo.lock;};
+    testPhase = "true";
+    buildPhase = ''
+      set -e
+      make rume-extension
+    '';
+    nativeBuildInputs = with pkgs; [
+      rust-cbindgen
+      clippy
+      gnumake
+    ];
+    installPhase = ''
+      mkdir -p $out
+      cp target/release/librume_extension.a $out/
+      cp rume_extension.h $out/
+    '';
+  };
+  rume-rust = pkgs.rustPlatform.buildRustPackage {
+    pname = "rume-rust";
+    version = "unstable";
+    src = ../rume;
+    cargoLock = {lockFile = ../rume/Cargo.lock;};
+    testPhase = "true";
+    buildPhase = ''
+      set -e
+      export TZ=Asia/Hong_Kong
+      make librume
+    '';
+    nativeBuildInputs = with pkgs; [
+      rust-cbindgen
+      clippy
+      gnumake
+    ];
+    installPhase = ''
+      mkdir -p $out
+      cp target/release/librume.dylib $out/
+      cp include/rume_api.h $out/
+    '';
+  };
   rume = pkgs.stdenvNoCC.mkDerivation {
     inherit shellHook;
     nativeBuildInputs =
@@ -76,13 +119,14 @@ in {
     version = "unstable";
     src = ../rume;
     buildPhase = ''
+      set -e
       ${shellHook}
       export CARGO_HOME=$PWD/.cargo
       export RIME_PLUGINS="hchunhui/librime-lua lotem/librime-octagram rime/librime-predict"
       export CMAKE_GENERATOR=Ninja
-      make deps
+      cp ${rume-extension}/rume_extension.h ./include/
+      cp ${rume-extension}/librume_extension.a ./lib/
       ./scripts/action-install-plugins-macos.sh
-      export TZ=Asia/Hong_Kong
       make test
       make install
     '';
@@ -93,7 +137,6 @@ in {
       cp -pR build/lib/rime-plugins $out/lib/
       cp build/bin/rime_deployer $out/bin/
       cp build/bin/rime_dict_manager $out/bin/
-      cp target/release/librume.dylib $out/lib/
     '';
   };
 }

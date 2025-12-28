@@ -21,7 +21,7 @@
         };
       in {
         packages = {
-          inherit (builds) mac-rume-deps plum-data rume;
+          inherit (builds) mac-rume-deps plum-data rume rume-rust rume-extension;
         };
         devShells.default = shell.default;
       }

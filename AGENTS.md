@@ -12,7 +12,7 @@ The Rume C interface is defined in `rume/include/rume_api.h` which is generated 
 
 ## Commands
 
-To build the Rust code and run its tests: `(cd rume && make rust-code)`
+To build the Rume Rust code and run its tests: `(cd rume && make librume)`. To build the Rume Extension (a Rime dependency, it is code which was originally written in C++ but is now rewritten in Rust), use: `(cd rume && make deps)`.
 
 ## Rume Setup
 

@@ -3,13 +3,15 @@
 set -xeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." &>/dev/null && pwd)"
 mkdir -p bin lib
 
 nix build -o nix-rume-build '.?submodules=1#rume'
 cp --no-preserve=mode -Lr nix-rume-build/lib/* lib/
 cp --no-preserve=mode -Lr nix-rume-build/bin/* bin/
 
-nix build -o nix-rume-rust-build '.?submodules=1#rume-rust'
+RUME_COMMIT_HASH="$(git -C "${ROOT_DIR}/rume" rev-parse HEAD)" \
+    nix build --impure -o nix-rume-rust-build '.?submodules=1#rume-rust'
 cp --no-preserve=mode -Lr nix-rume-rust-build/librume.dylib lib/
 cp --no-preserve=mode -Lr nix-rume-rust-build/rume_api.h rume/include/
 

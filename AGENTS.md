@@ -24,6 +24,12 @@ The code is in the `rume` directory. There are Rust tests inside `rume/src` and 
 
 In the root directory there is a `flake.nix` file which is the main configuration for building the different tools in the project.
 
+## Rime Setup
+
+The previous C++ code for Rime is also in the `rume` directory, in `rume/src`. All files with the `.cc` extension are from Rime. If you change Rime files, you should run `make -C rume release`. The generated Rime binaries are in `rume/build/bin`.
+
 ## Build Setup
 
-If you make changes in any Bash script or in any `Makefile`, and this change introductes new libraries, even if assumed that it would be available in macOS systems, make sure it is available in the Nix derivations and shells using those files. The Nix files are in `flake.nix` and in the `nix` directory.
+You will be using the Zsh shell when running commands. If you make changes in any Bash script or in any `Makefile`, and this change introductes new libraries, even if assumed that it would be available in macOS systems, make sure it is available in the Nix derivations and shells using those files. The Nix files are in `flake.nix` and in the `nix` directory.
+
+Because the project is using submodules, when building a derivation you have to pass this option. For example: `nix build '.?submodules=1#rume'`.

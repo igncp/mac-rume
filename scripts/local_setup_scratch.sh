@@ -17,6 +17,8 @@ cd ~/development/mac-rume-test
 
 git submodule set-url -- rume $HOME/development/mac-rume/rume
 
+git -c protocol.file.allow=always submodule update --init --recursive
+
 # Use all available cores and favor substituters to speed up a clean build.
 CPU_CORES=$(sysctl -n hw.ncpu || echo 4)
 

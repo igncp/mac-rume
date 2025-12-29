@@ -6,7 +6,6 @@
   common = import ./common.nix {
     inherit nixpkgs unstable system;
   };
-
   inherit (common) pkgs nativeBuildInputs shellHook;
 
   rime_version = "1.13.1";
@@ -32,6 +31,11 @@
     rev = "4c28f11f451facef809b380502874a48ba964ddb";
     sha256 = "sha256-4KrOYSNN2sjDhnMr4jZxF+0bPwRzj8oDsW0qSX23/dg=";
   };
+
+  _rumeCommitHash = builtins.getEnv "RUME_COMMIT_HASH";
+  rumeCommitHash =
+    builtins.trace "RUME_COMMIT_HASH: ${_rumeCommitHash}"
+    _rumeCommitHash;
 in rec {
   mac-rume-deps = pkgs.stdenvNoCC.mkDerivation {
     pname = "mac-rume-deps";
@@ -94,6 +98,9 @@ in rec {
     buildPhase = ''
       set -e
       export TZ=Asia/Hong_Kong
+      ${pkgs.lib.optionalString (rumeCommitHash != null) ''
+        export RUME_COMMIT_HASH=${rumeCommitHash}
+      ''}
       make librume
     '';
     nativeBuildInputs = with pkgs; [
@@ -103,6 +110,7 @@ in rec {
       astyle
       diffutils
       coreutils
+      git
     ];
     installPhase = ''
       mkdir -p $out

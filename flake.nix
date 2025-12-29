@@ -20,9 +20,7 @@
           inherit nixpkgs unstable system;
         };
       in {
-        packages = {
-          inherit (builds) mac-rume-deps plum-data rume rume-rust rume-extension;
-        };
+        packages = builds;
         devShells.default = shell.default;
       }
     );

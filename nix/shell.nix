@@ -15,6 +15,8 @@ in {
     packages = with pkgs; [
       doxygen
       nix
+      ccls
+      nixf-diagnose
       nodejs
       shfmt
       statix

@@ -21,3 +21,4 @@ package/*.xml
 .direnv
 /result
 /nix-*
+.ccls-cache

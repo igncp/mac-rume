@@ -1,0 +1,4 @@
+-std=c++17
+-I./rume/src
+-I./rume/include
+-I./rume/build/src/rime/

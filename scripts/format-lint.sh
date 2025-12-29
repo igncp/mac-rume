@@ -9,6 +9,7 @@ alejandra -q flake.nix nix/*
 
 statix check nix
 statix check flake.nix
+nixf-diagnose flake.nix $(find nix -type f)
 
 shfmt -w scripts
 

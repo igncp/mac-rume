@@ -32,10 +32,8 @@
     sha256 = "sha256-4KrOYSNN2sjDhnMr4jZxF+0bPwRzj8oDsW0qSX23/dg=";
   };
 
-  _rumeCommitHash = builtins.getEnv "RUME_COMMIT_HASH";
   rumeCommitHash =
-    builtins.trace "RUME_COMMIT_HASH: ${_rumeCommitHash}"
-    _rumeCommitHash;
+    pkgs.lib.traceValFn (x: "RUME_COMMIT_HASH: ${x}") (builtins.getEnv "RUME_COMMIT_HASH");
 in rec {
   mac-rume-deps = pkgs.stdenvNoCC.mkDerivation {
     pname = "mac-rume-deps";
@@ -110,7 +108,6 @@ in rec {
       astyle
       diffutils
       coreutils
-      git
     ];
     installPhase = ''
       mkdir -p $out
@@ -118,7 +115,7 @@ in rec {
       cp include/rume_api.h $out/
     '';
   };
-  rume = pkgs.stdenvNoCC.mkDerivation {
+  librime = pkgs.stdenvNoCC.mkDerivation {
     inherit shellHook;
     nativeBuildInputs =
       nativeBuildInputs
@@ -126,13 +123,12 @@ in rec {
         cacert
         git
       ]);
-    pname = "rume";
+    pname = "librime";
     version = "unstable";
     src = ../rume;
     buildPhase = ''
       set -e
       ${shellHook}
-      export CARGO_HOME=$PWD/.cargo
       export RIME_PLUGINS="hchunhui/librime-lua lotem/librime-octagram rime/librime-predict"
       export CMAKE_GENERATOR=Ninja
       cp ${rume-extension}/rume_extension.h ./include/
@@ -143,11 +139,10 @@ in rec {
     '';
     configurePhase = "echo skip";
     installPhase = ''
-      mkdir -p $out/lib $out/bin
+      mkdir -p $out/lib $out/bin $out/tools
       cp -L build/lib/librime.1.dylib $out/lib/
       cp -pR build/lib/rime-plugins $out/lib/
-      cp build/bin/rime_deployer $out/bin/
-      cp build/bin/rime_dict_manager $out/bin/
+      cp build/bin/* $out/bin/
     '';
   };
 }
